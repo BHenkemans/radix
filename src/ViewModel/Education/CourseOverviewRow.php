@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\ViewModel\Education;
 
 use App\Entity\Education\Course;
-use DateTime;
+use DateTimeImmutable;
+use NoDiscard;
 
 /**
  * Counted rather than hydrated: loading every course with its documents would fetch thousands of rows to display two
@@ -24,7 +25,7 @@ final readonly class CourseOverviewRow
         public string $name,
         public int $summaryCount,
         public int $examCount,
-        public ?DateTime $lastAddedAt,
+        public ?DateTimeImmutable $lastAddedAt,
         public array $similarCourses = [],
     ) {
     }
@@ -42,15 +43,9 @@ final readonly class CourseOverviewRow
     /**
      * @param Course[] $similarCourses
      */
+    #[NoDiscard]
     public function withSimilarCourses(array $similarCourses): self
     {
-        return new self(
-            $this->code,
-            $this->name,
-            $this->summaryCount,
-            $this->examCount,
-            $this->lastAddedAt,
-            $similarCourses,
-        );
+        return clone($this, ['similarCourses' => $similarCourses]);
     }
 }
