@@ -56,7 +56,7 @@ final class PollServiceTest extends DatabaseTestCase
         );
         // Nothing is public until the board says so, and a poll has no date until then either.
         self::assertNull($poll->getLiveRevision());
-        self::assertNull($poll->getExpiryDate());
+        self::assertNull($poll->expiryDate);
     }
 
     /**
@@ -71,7 +71,7 @@ final class PollServiceTest extends DatabaseTestCase
         // Only whoever asked gets to ask again, so the workflow guards read that member behind the request.
         $creator = $rejected->getCreator();
         self::assertNotNull($creator);
-        $this->authenticate($creator->getLidnr());
+        $this->authenticate($creator->lidnr);
 
         $poll = $this->service()->requestPoll(
             $this->revision(
@@ -149,8 +149,8 @@ final class PollServiceTest extends DatabaseTestCase
         );
 
         $second = new PollVote();
-        $second->setPoll($poll);
-        $second->setPollOption($options[1]);
+        $second->poll = $poll;
+        $second->pollOption = $options[1];
         $second->setRespondent($member);
         $this->entityManager->persist($second);
 
@@ -241,11 +241,11 @@ final class PollServiceTest extends DatabaseTestCase
 
         self::assertSame(
             $top,
-            $reply->getParent(),
+            $reply->parent,
         );
         self::assertSame(
             $reply,
-            $deeper->getParent(),
+            $deeper->parent,
         );
         self::assertSame(
             [$reply],
@@ -350,11 +350,11 @@ final class PollServiceTest extends DatabaseTestCase
         array $answers,
     ): PollRevision {
         $revision = new PollRevision();
-        $revision->setQuestion(new FrontpageLocalisedText($question));
+        $revision->question = new FrontpageLocalisedText($question);
 
         foreach ($answers as $answer) {
             $option = new PollOption();
-            $option->setText(new FrontpageLocalisedText($answer));
+            $option->text = new FrontpageLocalisedText($answer);
             $revision->addOption($option);
         }
 

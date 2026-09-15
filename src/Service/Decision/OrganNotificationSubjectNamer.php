@@ -36,12 +36,12 @@ final class OrganNotificationSubjectNamer extends AbstractNotificationSubjectNam
         $names = [];
 
         foreach ($this->revisionRepository->findBy(['id' => $subjectIds]) as $revision) {
-            $id = $revision->getId();
+            $id = $revision->id;
             if (null === $id) {
                 continue;
             }
 
-            $abbr = $revision->getOrgan()->getAbbr();
+            $abbr = $revision->getOrgan()->abbr;
             $names[$id] = [
                 'en' => $abbr,
                 'nl' => $abbr,

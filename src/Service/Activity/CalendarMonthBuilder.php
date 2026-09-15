@@ -167,7 +167,7 @@ final readonly class CalendarMonthBuilder
         foreach ($activities as $activity) {
             if (
                 null !== $organ
-                && $activity->getOrgan()?->getId() !== $organ->getId()
+                && $activity->getOrgan()?->id !== $organ->id
             ) {
                 continue;
             }
@@ -269,11 +269,11 @@ final readonly class CalendarMonthBuilder
         DateTimeImmutable $from,
         DateTimeImmutable $until,
     ): array {
-        $begins = DateTimeImmutable::createFromInterface($option->getBeginsAt())->setTime(
+        $begins = DateTimeImmutable::createFromInterface($option->beginsAt)->setTime(
             0,
             0,
         );
-        $ends = DateTimeImmutable::createFromInterface($option->getEndsAt())->setTime(
+        $ends = DateTimeImmutable::createFromInterface($option->endsAt)->setTime(
             0,
             0,
         );
@@ -304,16 +304,16 @@ final readonly class CalendarMonthBuilder
         bool $continuesBefore,
         bool $continuesAfter,
     ): CalendarEntry {
-        $proposal = $option->getProposal();
+        $proposal = $option->proposal;
 
         return new CalendarEntry(
-            DateOptionStatus::Approved === $option->getStatus()
+            DateOptionStatus::Approved === $option->status
                 ? CalendarEntryKind::ReservedDay
                 : CalendarEntryKind::RequestedDay,
-            $proposal->getName(),
-            $proposal->getOrgan()?->getAbbr() ?? '',
-            $option->getTimeOfDay()->value,
-            $proposal->getId(),
+            $proposal->name,
+            $proposal->organ->abbr ?? '',
+            $option->timeOfDay->value,
+            $proposal->id,
             $rank,
             $continuesBefore,
             $continuesAfter,
@@ -328,7 +328,7 @@ final readonly class CalendarMonthBuilder
         return new CalendarEntry(
             CalendarEntryKind::FixedActivity,
             $activity->getName()->getText(Languages::current()) ?? '',
-            $activity->getOrgan()?->getAbbr() ?? '',
+            $activity->getOrgan()->abbr ?? '',
             null,
             null,
             null,

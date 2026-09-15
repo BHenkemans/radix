@@ -295,9 +295,9 @@ final class SignupOverview
         foreach ($this->activity->getLiveSignupLists() as $signupList) {
             foreach ($this->confirmedSignups($signupList) as $signup) {
                 $memberships[$signup->personKey()][] = [
-                    'listId' => $signupList->getId() ?? 0,
-                    'name' => $signupList->getName()->getText($language) ?? '',
-                    'waiting' => $signupList->getLimitedCapacity() && !$signup->isDrawn(),
+                    'listId' => $signupList->id ?? 0,
+                    'name' => $signupList->name->getText($language) ?? '',
+                    'waiting' => $signupList->limitedCapacity && !$signup->drawn,
                 ];
             }
         }
@@ -643,7 +643,7 @@ final class SignupOverview
      */
     private function replyTo(): string
     {
-        $organEmail = $this->activity->getOrgan()?->getOrganInformation()?->getEmail();
+        $organEmail = $this->activity->getOrgan()?->organInformation?->getEmail();
 
         return null !== $organEmail && '' !== $organEmail
             ? $organEmail
@@ -696,14 +696,14 @@ final class SignupOverview
                     RecipientScope::Multi => count($memberships) > 1,
                     RecipientScope::Waitlisted => $this->waitingSomewhere($memberships),
                     RecipientScope::External => $external,
-                    RecipientScope::Present => $signup->isPresent(),
+                    RecipientScope::Present => $signup->present,
                     RecipientScope::Selected => in_array(
-                        $signup->getId(),
+                        $signup->id,
                         $selected,
                         true,
                     ),
-                    RecipientScope::Admitted => $signup->isDrawn(),
-                    RecipientScope::NoShow => $signup->isDrawn() && !$signup->isPresent(),
+                    RecipientScope::Admitted => $signup->drawn,
+                    RecipientScope::NoShow => $signup->drawn && !$signup->present,
                 };
 
                 if (
@@ -764,23 +764,23 @@ final class SignupOverview
 
         // On a limited-capacity list only admittees (drawn) can attend, so presence cannot be set for someone still on
         // the waiting list.
-        $list = $signup->getSignupList();
+        $list = $signup->signupList;
         if (
-            $list->getLimitedCapacity()
-            && !$signup->isDrawn()
+            $list->limitedCapacity
+            && !$signup->drawn
         ) {
             return;
         }
 
-        $signup->setPresent(!$signup->isPresent());
+        $signup->present = !$signup->present;
 
         // The list records that presence has been taken the first time anyone is marked; this drives the public
         // "presence taken" indicator and the review diff, and is never automatically unset.
         if (
-            $signup->isPresent()
-            && !$list->isPresenceTaken()
+            $signup->present
+            && !$list->presenceTaken
         ) {
-            $list->setPresenceTaken(true);
+            $list->presenceTaken = true;
         }
 
         $this->entityManager->flush();
@@ -803,24 +803,24 @@ final class SignupOverview
             return;
         }
 
-        $list = $signup->getSignupList();
+        $list = $signup->signupList;
         // Manual admission needs an open window and either a locked draw (FCFS/conditional methods) or a manual method
         // (external-party/custom, which never run a draw).
         if (
-            !$list->getLimitedCapacity()
+            !$list->limitedCapacity
             || !$this->admissionOpen()
             || (
                 !$list->isDrawLocked()
-                && !$list->getAllocationMethod()->isManual()
+                && !$list->allocationMethod->isManual()
             )
         ) {
             return;
         }
 
-        $admitted = !$signup->isDrawn();
-        $signup->setDrawn($admitted);
+        $admitted = !$signup->drawn;
+        $signup->drawn = $admitted;
         if (!$admitted) {
-            $signup->setPresent(false);
+            $signup->present = false;
         }
 
         $this->entityManager->flush();
@@ -840,7 +840,7 @@ final class SignupOverview
             return;
         }
 
-        $list = $signup->getSignupList();
+        $list = $signup->signupList;
         if (
             !$list->isClosed()
             || $list->isDrawLocked()
@@ -852,7 +852,7 @@ final class SignupOverview
 
         $chosen = null;
         foreach ($list->getRoles() as $role) {
-            if ($role->getId() !== $roleId) {
+            if ($role->id !== $roleId) {
                 continue;
             }
 
@@ -861,7 +861,9 @@ final class SignupOverview
             break;
         }
 
-        $signup->setRole($signup->getRole() === $chosen ? null : $chosen);
+        $signup->role = $signup->role === $chosen
+            ? null
+            : $chosen;
         $this->entityManager->flush();
     }
 
@@ -979,7 +981,7 @@ final class SignupOverview
 
         $selected = $this->selectedIds();
         foreach ($this->confirmedSignups($list) as $signup) {
-            $id = $signup->getId();
+            $id = $signup->id;
             if (
                 null === $id
                 || in_array(
@@ -1014,7 +1016,7 @@ final class SignupOverview
 
         $listIds = [];
         foreach ($list->getSignUps() as $signup) {
-            $id = $signup->getId();
+            $id = $signup->id;
             if (null === $id) {
                 continue;
             }
@@ -1278,7 +1280,7 @@ final class SignupOverview
         // Whether it is settled who has a place: a locked draw, or a manual allocation method where admission is set
         // by hand. Until then every sign-up on a limited list is still not-yet-drawn.
         $admissionSettled = $signupList->isDrawLocked()
-            || $signupList->getAllocationMethod()->isManual();
+            || $signupList->allocationMethod->isManual();
 
         // Admitted/Waitlisted only distinguish recipients on a limited list whose admission is settled; anywhere else
         // the two would silently resolve to "everyone" and "no one". Admitted-but-not-present needs the same, except
@@ -1288,8 +1290,8 @@ final class SignupOverview
         $unavailable = match ($scope) {
             RecipientScope::Multi => true,
             RecipientScope::Admitted,
-            RecipientScope::Waitlisted => !$signupList->getLimitedCapacity() || !$admissionSettled,
-            RecipientScope::NoShow => $signupList->getLimitedCapacity() && !$admissionSettled,
+            RecipientScope::Waitlisted => !$signupList->limitedCapacity || !$admissionSettled,
+            RecipientScope::NoShow => $signupList->limitedCapacity && !$admissionSettled,
             RecipientScope::All,
             RecipientScope::Selected,
             RecipientScope::Present,
@@ -1371,7 +1373,7 @@ final class SignupOverview
         }
 
         $member = $this->currentMember();
-        $email = $member->getEmail();
+        $email = $member->email;
         if (
             null === $email
             || '' === $email
@@ -1568,14 +1570,14 @@ final class SignupOverview
             $include = match ($scope) {
                 RecipientScope::All => true,
                 RecipientScope::Selected => in_array(
-                    $signup->getId(),
+                    $signup->id,
                     $selected,
                     true,
                 ),
-                RecipientScope::Present => $signup->isPresent(),
-                RecipientScope::NoShow => $signup->isDrawn() && !$signup->isPresent(),
-                RecipientScope::Admitted => $signup->isDrawn(),
-                RecipientScope::Waitlisted => !$signup->isDrawn(),
+                RecipientScope::Present => $signup->present,
+                RecipientScope::NoShow => $signup->drawn && !$signup->present,
+                RecipientScope::Admitted => $signup->drawn,
+                RecipientScope::Waitlisted => !$signup->drawn,
                 RecipientScope::External => $external,
                 RecipientScope::Multi => count($this->memberships()[$signup->personKey()] ?? []) > 1,
             };
@@ -1608,7 +1610,7 @@ final class SignupOverview
     {
         foreach ($this->activity->getLiveSignupLists() as $signupList) {
             foreach ($this->confirmedSignups($signupList) as $signup) {
-                if ($signup->getId() === $signupId) {
+                if ($signup->id === $signupId) {
                     return $signup;
                 }
             }
@@ -1620,7 +1622,7 @@ final class SignupOverview
     private function findOwnedList(int $listId): ?SignupList
     {
         foreach ($this->activity->getLiveSignupLists() as $signupList) {
-            if ($signupList->getId() === $listId) {
+            if ($signupList->id === $listId) {
                 return $signupList;
             }
         }
@@ -1641,7 +1643,7 @@ final class SignupOverview
         foreach ($signupList->getSignUps() as $signup) {
             if (
                 $signup instanceof ExternalSignup
-                && null === $signup->getVerifiedAt()
+                && null === $signup->verifiedAt
             ) {
                 continue;
             }
@@ -1664,7 +1666,7 @@ final class SignupOverview
         $user = $this->security->getUser();
         assert($user instanceof User);
 
-        return $user->getMember();
+        return $user->member;
     }
 
     private function setFeedback(

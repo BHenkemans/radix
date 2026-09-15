@@ -57,8 +57,8 @@ class AdminNewsController extends AbstractController
     public function create(Request $request): Response
     {
         $item = new NewsItem();
-        $item->setDate(new DateTime('today'));
-        $item->setPinned(false);
+        $item->date = new DateTime('today');
+        $item->pinned = false;
 
         $form = $this->createForm(
             NewsItemType::class,
@@ -133,7 +133,7 @@ class AdminNewsController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"news_delete-" ~ args["item"].getId()'),
+        id: new Expression('"news_delete-" ~ args["item"].id'),
         tokenKey: '_csrf_token',
     )]
     public function delete(NewsItem $item): Response

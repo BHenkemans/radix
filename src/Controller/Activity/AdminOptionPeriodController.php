@@ -156,7 +156,7 @@ class AdminOptionPeriodController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"option_period_delete-" ~ args["period"].getId()'),
+        id: new Expression('"option_period_delete-" ~ args["period"].id'),
         tokenKey: '_csrf_token',
     )]
     public function delete(OptionPeriod $period): Response
@@ -201,7 +201,7 @@ class AdminOptionPeriodController extends AbstractController
         OptionPeriod $period,
     ): Response {
         $limit = new PeriodProposalLimit();
-        $limit->setPeriod($period);
+        $limit->period = $period;
 
         $form = $this->createForm(
             PeriodProposalLimitType::class,
@@ -221,7 +221,7 @@ class AdminOptionPeriodController extends AbstractController
 
             return $this->redirectToRoute(
                 'admin/activities/calendar/periods/limits',
-                ['period' => $period->getId()],
+                ['period' => $period->id],
             );
         }
 
@@ -246,7 +246,7 @@ class AdminOptionPeriodController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"period_proposal_limit_delete-" ~ args["limit"].getId()'),
+        id: new Expression('"period_proposal_limit_delete-" ~ args["limit"].id'),
         tokenKey: '_csrf_token',
     )]
     public function deleteLimit(
@@ -262,7 +262,7 @@ class AdminOptionPeriodController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/activities/calendar/periods/limits',
-            ['period' => $period->getId()],
+            ['period' => $period->id],
         );
     }
 }

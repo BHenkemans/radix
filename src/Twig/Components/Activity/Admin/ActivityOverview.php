@@ -148,7 +148,7 @@ final class ActivityOverview extends AbstractDoctrinePaginatedOverview
         $user = $this->security->getUser();
         assert($user instanceof User);
 
-        return $user->getMember();
+        return $user->member;
     }
 
     /**
@@ -158,7 +158,7 @@ final class ActivityOverview extends AbstractDoctrinePaginatedOverview
     {
         $ids = [];
         foreach ($this->getMember()->getCurrentOrganInstallations() as $installation) {
-            $id = $installation->getOrgan()->getId();
+            $id = $installation->organ->id;
             if (null === $id) {
                 continue;
             }

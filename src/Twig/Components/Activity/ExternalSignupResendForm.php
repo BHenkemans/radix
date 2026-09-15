@@ -131,7 +131,7 @@ final class ExternalSignupResendForm
         // timing never reveals whether this email is signed up (mirrors the password-reset request).
         $this->messageBus->dispatch(
             new ExternalSignupResendVerificationEmail(
-                (int) $this->signupList->getId(),
+                (int) $this->signupList->id,
                 $email,
             ),
         );
@@ -146,7 +146,7 @@ final class ExternalSignupResendForm
         return new RedirectResponse(
             $this->urlGenerator->generate(
                 'activity/view',
-                ['activity' => $this->signupList->getActivity()->getId()],
+                ['activity' => $this->signupList->getActivity()->id],
             ),
         );
     }
@@ -157,9 +157,9 @@ final class ExternalSignupResendForm
     private function assertList(): void
     {
         if (
-            $this->signupList->getOnlyGEWIS()
+            $this->signupList->onlyGEWIS
             || $this->signupList->getActivity()->isFrozen()
-            || $this->signupList->getActivity()->getLiveRevision() !== $this->signupList->getRevision()
+            || $this->signupList->getActivity()->getLiveRevision() !== $this->signupList->revision
         ) {
             throw new AccessDeniedException();
         }

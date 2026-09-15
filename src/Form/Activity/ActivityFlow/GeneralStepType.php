@@ -163,7 +163,7 @@ class GeneralStepType extends AbstractType
         $ids = [];
 
         foreach ($organs as $organ) {
-            $ids[] = intval($organ->getId());
+            $ids[] = intval($organ->id);
         }
 
         if (
@@ -185,7 +185,7 @@ class GeneralStepType extends AbstractType
         $choices = ['none' => ActivityData::NONE];
 
         foreach ($organs as $organ) {
-            $choices[$organ->getAbbr()] = (string) intval($organ->getId());
+            $choices[$organ->abbr] = (string) intval($organ->id);
         }
 
         return $choices;
@@ -208,9 +208,9 @@ class GeneralStepType extends AbstractType
 
         $organs = [];
 
-        foreach ($user->getMember()->getCurrentOrganInstallations() as $installation) {
-            $organ = $installation->getOrgan();
-            $organs[intval($organ->getId())] = $organ;
+        foreach ($user->member->getCurrentOrganInstallations() as $installation) {
+            $organ = $installation->organ;
+            $organs[intval($organ->id)] = $organ;
         }
 
         return array_values($organs);
@@ -225,7 +225,7 @@ class GeneralStepType extends AbstractType
 
         foreach ($this->companyRepository->findAll() as $company) {
             assert($company instanceof Company);
-            $choices[$company->getName()] = (string) intval($company->getId());
+            $choices[$company->name] = (string) intval($company->id);
         }
 
         return $choices;
@@ -241,7 +241,7 @@ class GeneralStepType extends AbstractType
 
         foreach ($this->activityLabelRepository->findAllWithName() as $label) {
             assert($label instanceof ActivityLabel);
-            $choices[$label->getName()->getText($language) ?? ''] = intval($label->getId());
+            $choices[$label->name->getText($language) ?? ''] = intval($label->id);
         }
 
         return $choices;

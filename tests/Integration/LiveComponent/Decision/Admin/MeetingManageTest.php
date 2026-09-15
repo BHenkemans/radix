@@ -46,7 +46,7 @@ final class MeetingManageTest extends DatabaseTestCase
         $added = $points[count($before)]->point;
         self::assertSame(
             '',
-            $added->getNumber(),
+            $added->number,
         );
         self::assertNotNull($component->savedAt);
     }
@@ -60,27 +60,27 @@ final class MeetingManageTest extends DatabaseTestCase
         $document = $component->getView()->points[0]->documents[0];
 
         $component->pointEdits = [
-            (string) $point->getId() => [
+            (string) $point->id => [
                 'number' => '9',
                 'title' => 'Renumbered',
             ],
         ];
         $component->documentEdits = [
-            (string) $document->getId() => ['name' => 'Agenda (final)'],
+            (string) $document->id => ['name' => 'Agenda (final)'],
         ];
         $component->syncEdits();
 
         self::assertSame(
             '9',
-            $point->getNumber(),
+            $point->number,
         );
         self::assertSame(
             'Renumbered',
-            $point->getTitle(),
+            $point->title,
         );
         self::assertSame(
             'Agenda (final)',
-            $document->getName(),
+            $document->name,
         );
         self::assertSame(
             [],
@@ -95,11 +95,11 @@ final class MeetingManageTest extends DatabaseTestCase
         $component = $this->manageFor();
 
         $point = $this->point('2');
-        $component->deletePoint((int) $point->getId());
+        $component->deletePoint((int) $point->id);
 
         $view = $component->getView();
         $names = array_map(
-            static fn (MeetingDocument $document) => $document->getName(),
+            static fn (MeetingDocument $document) => $document->name,
             $view->meetingLevelDocuments,
         );
         self::assertContains(
@@ -118,7 +118,7 @@ final class MeetingManageTest extends DatabaseTestCase
         $component = $this->manageFor();
 
         $document = $component->getView()->meetingLevelDocuments[0];
-        $component->deleteDocument((int) $document->getId());
+        $component->deleteDocument((int) $document->id);
 
         self::assertSame(
             [],
@@ -132,7 +132,7 @@ final class MeetingManageTest extends DatabaseTestCase
         $component = $this->manageFor();
 
         $ids = array_map(
-            static fn (MeetingPointView $pointView) => (int) $pointView->point->getId(),
+            static fn (MeetingPointView $pointView) => (int) $pointView->point->id,
             $component->getView()->points,
         );
         $component->reorderPoints(array_reverse($ids));
@@ -140,7 +140,7 @@ final class MeetingManageTest extends DatabaseTestCase
         self::assertSame(
             array_reverse($ids),
             array_map(
-                static fn (MeetingPointView $pointView) => (int) $pointView->point->getId(),
+                static fn (MeetingPointView $pointView) => (int) $pointView->point->id,
                 $component->getView()->points,
             ),
         );
@@ -168,7 +168,7 @@ final class MeetingManageTest extends DatabaseTestCase
             $component->getView()->references,
         );
 
-        $component->toggleReference((int) $definitions->getId());
+        $component->toggleReference((int) $definitions->id);
         $references = $component->getView()->references;
         self::assertCount(
             2,
@@ -177,17 +177,17 @@ final class MeetingManageTest extends DatabaseTestCase
 
         // A fresh selection pins the latest version explicitly; nothing ever follows the library implicitly.
         foreach ($references as $selection) {
-            if ($selection->getReferenceDocument() !== $definitions) {
+            if ($selection->referenceDocument !== $definitions) {
                 continue;
             }
 
             self::assertSame(
                 $definitions->getLatestVersion(),
-                $selection->getPinnedVersion(),
+                $selection->pinnedVersion,
             );
         }
 
-        $component->toggleReference((int) $definitions->getId());
+        $component->toggleReference((int) $definitions->id);
         self::assertCount(
             1,
             $component->getView()->references,
@@ -212,7 +212,7 @@ final class MeetingManageTest extends DatabaseTestCase
             $references,
         );
         $names = array_map(
-            static fn ($selection) => $selection->getReferenceDocument()->getName(),
+            static fn ($selection) => $selection->referenceDocument->name,
             $references,
         );
         self::assertContains(
@@ -234,13 +234,13 @@ final class MeetingManageTest extends DatabaseTestCase
         $original = $scenarios->getVersions()->first();
         self::assertNotFalse($original);
 
-        $component->pins = [(string) $scenarios->getId() => (string) $original->getId()];
+        $component->pins = [(string) $scenarios->id => (string) $original->id];
         $component->syncEdits();
 
         $selection = $component->getView()->references[0];
         self::assertSame(
             'v3.0',
-            $selection->getPinnedVersion()->getVersionLabel(),
+            $selection->pinnedVersion->versionLabel,
         );
     }
 
@@ -261,11 +261,11 @@ final class MeetingManageTest extends DatabaseTestCase
         self::assertNotNull($details);
         self::assertSame(
             '20:00',
-            $details->getStartTime()?->format('H:i'),
+            $details->startTime?->format('H:i'),
         );
         self::assertSame(
             'Auditorium 4',
-            $details->getLocation(),
+            $details->location,
         );
         self::assertNotNull($component->savedAt);
     }
@@ -371,7 +371,7 @@ final class MeetingManageTest extends DatabaseTestCase
         self::assertNotEmpty($view->points);
 
         foreach ($view->points as $pointView) {
-            $id = (string) $pointView->point->getId();
+            $id = (string) $pointView->point->id;
 
             self::assertArrayHasKey(
                 $id,
@@ -435,7 +435,7 @@ final class MeetingManageTest extends DatabaseTestCase
             $minutes,
         );
 
-        return $minutes[0]->getMeeting()->getNumber();
+        return $minutes[0]->meeting->number;
     }
 
     private function referenceDocument(string $name): ReferenceDocument

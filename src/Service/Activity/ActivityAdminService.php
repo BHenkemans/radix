@@ -78,7 +78,7 @@ final readonly class ActivityAdminService
             return false;
         }
 
-        $list->getRevision()->removeSignupList($list);
+        $list->revision->removeSignupList($list);
         $this->entityManager->remove($list);
         $this->entityManager->flush();
 
@@ -96,7 +96,7 @@ final readonly class ActivityAdminService
         ActivityRevision $revision,
         int $baseVersion,
     ): void {
-        if (null === $revision->getId()) {
+        if (null === $revision->id) {
             return;
         }
 

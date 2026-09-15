@@ -177,13 +177,13 @@ final class CareerApprovalWiringTest extends DatabaseTestCase
             $draft,
         );
         // Something that would be lost with the draft, so the discard has to take it too.
-        $draft->setSlogan(new CareerLocalisedText(
+        $draft->slogan = new CareerLocalisedText(
             'Changed',
             'Gewijzigd',
-        ));
+        );
         $this->entityManager->persist($draft);
         $this->entityManager->flush();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
 
         self::getContainer()->get(RevisionDiscarder::class)->discardToLive($draft);
         $this->entityManager->flush();

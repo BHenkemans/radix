@@ -22,11 +22,11 @@ class UserFixture extends Fixture implements DependentFixtureInterface, FixtureG
         // Every member the replay produced gets an account, rather than a fixed run of numbers: the population is
         // numbered in blocks with gaps between them, and a gap is not somebody to make an account for.
         foreach ($manager->getRepository(Member::class)->findAll() as $member) {
-            $lidnr = $member->getLidnr();
+            $lidnr = $member->lidnr;
 
             $user = new User();
-            $user->setLidnr($lidnr);
-            $user->setMember($member);
+            $user->lidnr = $lidnr;
+            $user->member = $member;
             // == gewiswebgewis. The cost (argon2id m=10, t=3) matches the configured hasher in dev and test
             // (config/packages/security.yaml), so logging in as a seeded user triggers no rehash-on-login UPDATE.
             $user->setPassword(

@@ -53,10 +53,10 @@ class AdminVacancyLabelController extends AbstractController
     public function index(Request $request): Response
     {
         $label = new VacancyLabel();
-        $label->setName(new CareerLocalisedText(
+        $label->name = new CareerLocalisedText(
             null,
             null,
-        ));
+        );
 
         $form = $this->createForm(
             VacancyLabelType::class,
@@ -134,7 +134,7 @@ class AdminVacancyLabelController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"vacancy_label_delete-" ~ args["label"].getId()'),
+        id: new Expression('"vacancy_label_delete-" ~ args["label"].id'),
         tokenKey: '_csrf_token',
     )]
     public function delete(VacancyLabel $label): Response

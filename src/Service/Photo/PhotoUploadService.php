@@ -83,7 +83,7 @@ final readonly class PhotoUploadService
         }
 
         if ($created > 0) {
-            $this->messageBus->dispatch(new GenerateAlbumCoverMessage(intval($album->getId())));
+            $this->messageBus->dispatch(new GenerateAlbumCoverMessage(intval($album->id)));
             // Only genuine EXIF capture times may adjust the album's date range; a no-EXIF photo (scan, export) keeps
             // the upload time for ordering but must never drag a board-curated range to today.
             $this->widenDateRange(
@@ -117,21 +117,21 @@ final readonly class PhotoUploadService
         $latest = max($captureTimes);
         $changed = false;
 
-        $start = $album->getStartDateTime();
+        $start = $album->startDateTime;
         if (
             null === $start
             || $earliest < $start
         ) {
-            $album->setStartDateTime($earliest);
+            $album->startDateTime = $earliest;
             $changed = true;
         }
 
-        $end = $album->getEndDateTime();
+        $end = $album->endDateTime;
         if (
             null === $end
             || $latest > $end
         ) {
-            $album->setEndDateTime($latest);
+            $album->endDateTime = $latest;
             $changed = true;
         }
 
@@ -174,7 +174,7 @@ final readonly class PhotoUploadService
             $stored = $this->fileStorage->store(
                 StorageNamespace::PhotoOriginal,
                 $file->getPathname(),
-                strval($album->getId()),
+                strval($album->id),
             );
 
             if (
@@ -190,12 +190,12 @@ final readonly class PhotoUploadService
             }
 
             $photo = new Photo();
-            $photo->setAlbum($album);
-            $photo->setPath($stored->path);
+            $photo->album = $album;
+            $photo->path = $stored->path;
             // A non-EXIF photo still needs a (non-nullable) timestamp for ordering; the upload time is the fallback,
             // and applyTo() overrides it only when EXIF actually carried a capture time.
-            $photo->setDateTime(new DateTime());
-            $photo->setAspectRatio($aspectRatio);
+            $photo->dateTime = new DateTime();
+            $photo->aspectRatio = $aspectRatio;
             $metadata->applyTo($photo);
 
             $this->entityManager->persist($photo);

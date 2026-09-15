@@ -83,7 +83,7 @@ class AdminProposalDecisionController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"activity_date_option_approve-" ~ args["option"].getId()'),
+        id: new Expression('"activity_date_option_approve-" ~ args["option"].id'),
         tokenKey: '_csrf_token',
     )]
     public function approveOption(
@@ -91,7 +91,7 @@ class AdminProposalDecisionController extends AbstractController
         #[CurrentUser]
         User $user,
     ): Response {
-        $proposal = $option->getProposal();
+        $proposal = $option->proposal;
 
         if (
             !$this->activityProposalStateMachine->can(
@@ -107,13 +107,13 @@ class AdminProposalDecisionController extends AbstractController
             return $this->redirectToRoute('admin/activities/calendar/decisions/index');
         }
 
-        $option->setDecidedBy($user->getMember());
-        $option->setDecidedAt(new DateTime());
+        $option->decidedBy = $user->member;
+        $option->decidedAt = new DateTime();
 
         $this->proposalManager->schedule(
             $proposal,
             $option,
-            $user->getMember(),
+            $user->member,
         );
 
         $this->addFlash(
@@ -131,7 +131,7 @@ class AdminProposalDecisionController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"activity_proposal_decline-" ~ args["proposal"].getId()'),
+        id: new Expression('"activity_proposal_decline-" ~ args["proposal"].id'),
         tokenKey: '_csrf_token',
     )]
     public function decline(
@@ -155,7 +155,7 @@ class AdminProposalDecisionController extends AbstractController
 
         $this->proposalManager->decline(
             $proposal,
-            $user->getMember(),
+            $user->member,
         );
 
         $this->addFlash(
@@ -177,7 +177,7 @@ class AdminProposalDecisionController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"activity_proposal_clearance-" ~ args["proposal"].getId()'),
+        id: new Expression('"activity_proposal_clearance-" ~ args["proposal"].id'),
         tokenKey: '_csrf_token',
     )]
     public function clearance(
@@ -204,7 +204,7 @@ class AdminProposalDecisionController extends AbstractController
         $this->proposalManager->clearBudget(
             $proposal,
             $outcome,
-            $user->getMember(),
+            $user->member,
         );
 
         $this->addFlash(
@@ -254,11 +254,11 @@ class AdminProposalDecisionController extends AbstractController
 
         foreach ($waiting as $proposal) {
             foreach ($proposal->getDateOptions() as $dateOption) {
-                if (!$dateOption->getStatus()->isStanding()) {
+                if (!$dateOption->status->isStanding()) {
                     continue;
                 }
 
-                $byDay[$dateOption->getBeginsAt()->format('Y-m-d')][] = $dateOption;
+                $byDay[$dateOption->beginsAt->format('Y-m-d')][] = $dateOption;
             }
         }
 

@@ -79,9 +79,9 @@ final readonly class SignupPeopleView
         $signupCount = 0;
 
         foreach ($signupLists as $signupList) {
-            $listId = $signupList->getId() ?? 0;
-            $listName = $signupList->getName()->getText($language) ?? '';
-            $limited = $signupList->getLimitedCapacity();
+            $listId = $signupList->id ?? 0;
+            $listName = $signupList->name->getText($language) ?? '';
+            $limited = $signupList->limitedCapacity;
             $lists[] = [
                 'listId' => $listId,
                 'name' => $listName,
@@ -90,7 +90,7 @@ final readonly class SignupPeopleView
 
             $fields = $signupList->getFields()->getValues();
             foreach ($fields as $field) {
-                $fieldId = $field->getId() ?? 0;
+                $fieldId = $field->id ?? 0;
                 $hidden = in_array(
                     $fieldId,
                     $hiddenFieldIds,
@@ -98,7 +98,7 @@ final readonly class SignupPeopleView
                 );
                 $answerColumns[] = [
                     'key' => $listId . ':' . $fieldId,
-                    'label' => $listName . ' · ' . ($field->getName()->getText($language) ?? ''),
+                    'label' => $listName . ' · ' . ($field->name->getText($language) ?? ''),
                     'fieldId' => $fieldId,
                     'hidden' => $hidden,
                 ];
@@ -110,14 +110,14 @@ final readonly class SignupPeopleView
                 ++$visibleAnswerCount;
             }
 
-            $committee = null === $signupList->getOrganisingCommitteePlaces()
+            $committee = null === $signupList->organisingCommitteePlaces
                 ? []
                 : SignupTiers::organisingCommittee($signupList);
 
             foreach ($signupList->getSignUpsInAdmissionOrder() as $signup) {
                 if (
                     $signup instanceof ExternalSignup
-                    && null === $signup->getVerifiedAt()
+                    && null === $signup->verifiedAt
                 ) {
                     continue;
                 }
@@ -229,12 +229,12 @@ final readonly class SignupPeopleView
         $first = $group[0]['signup'];
 
         if ($first instanceof UserSignup) {
-            $member = $first->getUser();
+            $member = $first->user;
             $membershipTypeLabel = $translator->trans(
                 'User (%type%)',
-                ['%type%' => $member->getType()->trans($translator)],
+                ['%type%' => $member->type->trans($translator)],
             );
-            $generation = $member->getGeneration();
+            $generation = $member->generation;
             $external = false;
         } else {
             $membershipTypeLabel = $translator->trans('External');
@@ -253,7 +253,7 @@ final readonly class SignupPeopleView
             if (
                 $signup instanceof UserSignup
                 && array_key_exists(
-                    $signup->getUser()->getLidnr(),
+                    $signup->user->lidnr,
                     $membership['committee'],
                 )
             ) {
@@ -262,12 +262,12 @@ final readonly class SignupPeopleView
 
             $statuses[$membership['listId']] = !$membership['limited']
                 ? 'signed'
-                : ($signup->isDrawn() ? 'admitted' : 'waiting');
-            $signupIds[] = $signup->getId() ?? 0;
+                : ($signup->drawn ? 'admitted' : 'waiting');
+            $signupIds[] = $signup->id ?? 0;
 
             if (
                 in_array(
-                    $signup->getId(),
+                    $signup->id,
                     $selectedIds,
                     true,
                 )
@@ -276,7 +276,7 @@ final readonly class SignupPeopleView
             }
 
             foreach ($membership['fields'] as $field) {
-                $answers[$membership['listId'] . ':' . ($field->getId() ?? 0)] = $signup->displayValueForField(
+                $answers[$membership['listId'] . ':' . ($field->id ?? 0)] = $signup->displayValueForField(
                     $field,
                     $translator,
                     $language,

@@ -140,15 +140,15 @@ final class RevisionVoter extends Voter
         ?RevisionInterface $revision,
     ): bool {
         if ($user instanceof User) {
-            $member = $user->getMember();
+            $member = $user->member;
 
-            if ($revisable->getResourceCreator()?->getLidnr() === $member->getLidnr()) {
+            if ($revisable->getResourceCreator()?->lidnr === $member->lidnr) {
                 return true;
             }
 
             if (
                 null !== $revision
-                && $revision->getAuthor()?->getLidnr() === $member->getLidnr()
+                && $revision->getAuthor()?->lidnr === $member->lidnr
             ) {
                 return true;
             }
@@ -163,8 +163,8 @@ final class RevisionVoter extends Voter
             $company = $revisable->getResourceCompany();
 
             return null !== $company
-                && null !== $company->getId()
-                && $company->getId() === $user->getCompany()->getId();
+                && null !== $company->id
+                && $company->id === $user->company->id;
         }
 
         return false;
@@ -179,7 +179,7 @@ final class RevisionVoter extends Voter
         }
 
         foreach ($member->getCurrentOrganInstallations() as $installation) {
-            if ($installation->getOrgan()->getId() === $organ->getId()) {
+            if ($installation->organ->id === $organ->id) {
                 return true;
             }
         }

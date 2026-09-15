@@ -55,7 +55,7 @@ class CompanyBannerController extends AbstractController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
         $package = $company->getActivePackage(CompanyBannerPackage::class);
 
         if (null === $package) {
@@ -71,7 +71,7 @@ class CompanyBannerController extends AbstractController
 
         $form = $this->createForm(
             BannerImageType::class,
-            options: ['format' => $package->getFormat()],
+            options: ['format' => $package->format],
         )->handleRequest($request);
 
         $file = $form->get('image')->getData();

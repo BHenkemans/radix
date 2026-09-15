@@ -55,7 +55,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
 
         // An abandoned re-edit: a Draft head spawned from the live revision, untouched for longer than the cutoff.
         $draft = $this->cloneAsDraft($live);
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->backdate(
             ActivityRevision::class,
             $draftId,
@@ -81,10 +81,10 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testDeletesAStaleNeverApprovedActivityEntirely(): void
     {
         $draft = $this->aNeverApprovedActivityDraft();
-        $activityId = (int) $draft->getActivity()->getId();
+        $activityId = (int) $draft->activity->id;
         $this->backdate(
             ActivityRevision::class,
-            (int) $draft->getId(),
+            (int) $draft->id,
             [
                 'beginTime' => new DateTime('-2 months'),
                 'endTime' => new DateTime('-2 months +1 hour'),
@@ -103,8 +103,8 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testDryRunReportsButChangesNothing(): void
     {
         $draft = $this->aNeverApprovedActivityDraft();
-        $activityId = (int) $draft->getActivity()->getId();
-        $draftId = (int) $draft->getId();
+        $activityId = (int) $draft->activity->id;
+        $draftId = (int) $draft->id;
         $this->backdate(
             ActivityRevision::class,
             $draftId,
@@ -142,7 +142,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         $submitted = $this->cloneAsDraft($live);
         $submitted->setStatus(RevisionStatus::Submitted);
         $this->entityManager->flush();
-        $submittedId = (int) $submitted->getId();
+        $submittedId = (int) $submitted->id;
         $this->backdate(
             ActivityRevision::class,
             $submittedId,
@@ -171,8 +171,8 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testKeepsAnUntouchedHeadWhoseActivityIsStillToCome(): void
     {
         $draft = $this->aNeverApprovedActivityDraft();
-        $activityId = (int) $draft->getActivity()->getId();
-        $draftId = (int) $draft->getId();
+        $activityId = (int) $draft->activity->id;
+        $draftId = (int) $draft->id;
         $this->backdate(
             ActivityRevision::class,
             $draftId,
@@ -219,7 +219,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         );
 
         $draft = $this->cloneAsDraft($live);
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->backdate(
             VacancyRevision::class,
             $draftId,
@@ -258,8 +258,8 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testDeletesAPollThatWasNeverApproved(): void
     {
         $revision = $this->aNeverApprovedPollRevision();
-        $pollId = (int) $revision->getRevisable()->getId();
-        $revisionId = (int) $revision->getId();
+        $pollId = (int) $revision->getRevisable()->id;
+        $revisionId = (int) $revision->id;
         $this->backdate(
             PollRevision::class,
             $revisionId,
@@ -291,7 +291,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
             CompanyRevision::class,
             $live,
         );
-        $live->setSquareLogo($shared);
+        $live->squareLogo = $shared;
         $this->entityManager->flush();
 
         // The clone carries the square logo forward by value; the banner is this draft's alone.
@@ -300,9 +300,9 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
             CompanyRevision::class,
             $draft,
         );
-        $draft->setBannerLogo($abandoned);
+        $draft->bannerLogo = $abandoned;
         $this->entityManager->flush();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->backdate(
             CompanyRevision::class,
             $draftId,
@@ -359,12 +359,12 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
             OrganInformationRevision::class,
             $draft,
         );
-        $draft->setBannerSource($paths[0]);
-        $draft->setBannerPath($paths[1]);
-        $draft->setLogoSource($paths[2]);
-        $draft->setLogoPath($paths[3]);
+        $draft->bannerSource = $paths[0];
+        $draft->bannerPath = $paths[1];
+        $draft->logoSource = $paths[2];
+        $draft->logoPath = $paths[3];
         $this->entityManager->flush();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->backdate(
             OrganInformationRevision::class,
             $draftId,
@@ -410,8 +410,8 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         $draft = $this->cloneAsDraft($live);
         $company->setLiveRevision(null);
         $this->entityManager->flush();
-        $companyId = (int) $company->getId();
-        $draftId = (int) $draft->getId();
+        $companyId = (int) $company->id;
+        $draftId = (int) $draft->id;
         $this->backdate(
             CompanyRevision::class,
             $draftId,
@@ -435,7 +435,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testKeepsAStaleActivityThatSomehowHasSignups(): void
     {
         $draft = $this->aNeverApprovedActivityDraftWithASignup();
-        $activityId = (int) $draft->getActivity()->getId();
+        $activityId = (int) $draft->activity->id;
 
         $this->executeCommand();
 
@@ -452,8 +452,8 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testForceDeletesAStaleActivityTogetherWithItsSignups(): void
     {
         $draft = $this->aNeverApprovedActivityDraftWithASignup();
-        $activityId = (int) $draft->getActivity()->getId();
-        $signupId = (int) $this->theSignupOn($draft)->getId();
+        $activityId = (int) $draft->activity->id;
+        $signupId = (int) $this->theSignupOn($draft)->id;
 
         $this->executeCommand(['--force' => true]);
 
@@ -478,10 +478,10 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testForceStillOnlyReachesWhatIsAlreadyStale(): void
     {
         $draft = $this->aNeverApprovedActivityDraftWithASignup();
-        $activityId = (int) $draft->getActivity()->getId();
+        $activityId = (int) $draft->activity->id;
         $this->backdate(
             ActivityRevision::class,
-            (int) $draft->getId(),
+            (int) $draft->id,
             ['updatedAt' => new DateTime('-2 days')],
         );
 
@@ -499,7 +499,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testAForcedDryRunReportsTheActivityButLeavesItStanding(): void
     {
         $draft = $this->aNeverApprovedActivityDraftWithASignup();
-        $activityId = (int) $draft->getActivity()->getId();
+        $activityId = (int) $draft->activity->id;
 
         $this->executeCommand([
             '--force' => true,
@@ -518,7 +518,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
     public function testDecliningTheConfirmationForcesNothing(): void
     {
         $draft = $this->aNeverApprovedActivityDraftWithASignup();
-        $activityId = (int) $draft->getActivity()->getId();
+        $activityId = (int) $draft->activity->id;
 
         $this->executeCommand(
             ['--force' => true],
@@ -547,10 +547,10 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         $draft = $this->cloneAsDraft($live);
         $company->setLiveRevision(null);
         $this->entityManager->flush();
-        $companyId = (int) $company->getId();
+        $companyId = (int) $company->id;
         $this->backdate(
             CompanyRevision::class,
-            (int) $draft->getId(),
+            (int) $draft->id,
             ['updatedAt' => new DateTime('-100 days')],
         );
 
@@ -846,45 +846,39 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         $draft = $this->aNeverApprovedActivityDraft();
 
         $signupList = new SignupList();
-        $signupList->setName(
-            new ActivityLocalisedText(
-                'Attendees',
-                'Aanwezigen',
-            ),
+        $signupList->name = new ActivityLocalisedText(
+            'Attendees',
+            'Aanwezigen',
         );
-        $signupList->setRevision($draft);
+        $signupList->revision = $draft;
         $draft->addSignupList($signupList);
 
         $field = new SignupField();
-        $field->setName(
-            new ActivityLocalisedText(
-                'Preference',
-                'Voorkeur',
-            ),
+        $field->name = new ActivityLocalisedText(
+            'Preference',
+            'Voorkeur',
         );
-        $field->setType(SignupFieldTypes::Choice);
-        $field->setPosition(0);
+        $field->type = SignupFieldTypes::Choice;
+        $field->position = 0;
 
         $option = new SignupOption();
-        $option->setValue(
-            new ActivityLocalisedText(
-                'Either',
-                'Maakt niet uit',
-            ),
+        $option->value = new ActivityLocalisedText(
+            'Either',
+            'Maakt niet uit',
         );
-        $option->setPosition(0);
+        $option->position = 0;
         $field->addOption($option);
         $signupList->addField($field);
 
         $signup = new UserSignup();
-        $signup->setSignupList($signupList);
-        $signup->setUser($this->aMember());
+        $signup->signupList = $signupList;
+        $signup->user = $this->aMember();
         $signupList->getSignUps()->add($signup);
 
         $fieldValue = new SignupFieldValue();
-        $fieldValue->setSignup($signup);
-        $fieldValue->setField($field);
-        $fieldValue->setOption($option);
+        $fieldValue->signup = $signup;
+        $fieldValue->field = $field;
+        $fieldValue->option = $option;
         $signup->getFieldValues()->add($fieldValue);
 
         $this->entityManager->persist($signupList);
@@ -896,7 +890,7 @@ final class DeleteStaleRevisionsCommandTest extends DatabaseTestCase
         // well: a list is not abandoned while the evening it belongs to is still to come, forced or not.
         $this->backdate(
             ActivityRevision::class,
-            (int) $draft->getId(),
+            (int) $draft->id,
             [
                 'beginTime' => new DateTime('-2 months'),
                 'endTime' => new DateTime('-2 months +1 hour'),

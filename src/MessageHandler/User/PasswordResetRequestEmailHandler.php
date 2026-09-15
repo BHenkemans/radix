@@ -86,7 +86,7 @@ class PasswordResetRequestEmailHandler
             $minimumLifetime = new DateTimeImmutable('now')
                 ->add(new DateInterval('PT' . self::ACTIVE_TOKEN_REUSE_GRACE_SECONDS . 'S'));
 
-            if ($existingReset->getExpiresAt() > $minimumLifetime) {
+            if ($existingReset->expiresAt > $minimumLifetime) {
                 return;
             }
         }
@@ -107,7 +107,7 @@ class PasswordResetRequestEmailHandler
         $this->securityEvents->record(
             SecurityEventType::PasswordResetRequested,
             $member instanceof Member
-                ? (string) $member->getLidnr()
+                ? (string) $member->lidnr
                 : $companyUser->getUserIdentifier(),
             $member instanceof Member ? 'main' : 'company',
         );
@@ -143,11 +143,11 @@ class PasswordResetRequestEmailHandler
         );
 
         if ($member instanceof Member) {
-            $recipientEmail = $member->getEmail();
+            $recipientEmail = $member->email;
             $fullName = $member->getFullName();
         } else {
-            $recipientEmail = $companyUser->getEmail();
-            $fullName = $companyUser->getName();
+            $recipientEmail = $companyUser->email;
+            $fullName = $companyUser->name;
         }
 
         assert(null !== $recipientEmail);

@@ -29,8 +29,8 @@ final class FileReferenceProviderTest extends DatabaseTestCase
             $revision,
             'The seed is expected to contain a company revision.',
         );
-        $revision->setSquareLogo('career/1/images/reference-test.png');
-        $revision->setBannerLogo('career/1/images/banner-reference-test.png');
+        $revision->squareLogo = 'career/1/images/reference-test.png';
+        $revision->bannerLogo = 'career/1/images/banner-reference-test.png';
         $this->entityManager->flush();
 
         $provider = new CompanyLogoReferenceProvider($this->entityManager);
@@ -99,10 +99,10 @@ final class FileReferenceProviderTest extends DatabaseTestCase
             OrganInformationRevision::class,
             $revision,
         );
-        $revision->setBannerSource('organs/images/cover-source-reference-test.png');
-        $revision->setBannerPath('organs/images/cover-reference-test.png');
-        $revision->setLogoSource('organs/images/thumbnail-source-reference-test.png');
-        $revision->setLogoPath('organs/images/thumbnail-reference-test.png');
+        $revision->bannerSource = 'organs/images/cover-source-reference-test.png';
+        $revision->bannerPath = 'organs/images/cover-reference-test.png';
+        $revision->logoSource = 'organs/images/thumbnail-source-reference-test.png';
+        $revision->logoPath = 'organs/images/thumbnail-reference-test.png';
         $this->entityManager->flush();
 
         $provider = new OrganImageReferenceProvider($this->entityManager);
@@ -121,7 +121,7 @@ final class FileReferenceProviderTest extends DatabaseTestCase
             CompanyRevision::class,
             $revision,
         );
-        $revision->setSquareLogo('career/1/images/still-referenced.png');
+        $revision->squareLogo = 'career/1/images/still-referenced.png';
         $this->entityManager->flush();
 
         // The provider is auto-tagged, so FileStorage must refuse to unlink a file a revision still references.

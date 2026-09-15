@@ -92,10 +92,10 @@ class AdminVacancyController extends AbstractController
         User $user,
     ): Response {
         $vacancy = new Vacancy();
-        $vacancy->setPublished(true);
+        $vacancy->published = true;
 
         $revision = new VacancyRevision();
-        $revision->setAuthor($user->getMember());
+        $revision->setAuthor($user->member);
         $vacancy->addRevision($revision);
         $vacancy->setCurrentRevision($revision);
 
@@ -159,7 +159,7 @@ class AdminVacancyController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"career_vacancy_edit_lock-" ~ args["vacancy"].getId()'),
+        id: new Expression('"career_vacancy_edit_lock-" ~ args["vacancy"].id'),
         tokenKey: '_csrf_token',
     )]
     public function editPing(
@@ -180,7 +180,7 @@ class AdminVacancyController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"career_vacancy_edit_lock-" ~ args["vacancy"].getId()'),
+        id: new Expression('"career_vacancy_edit_lock-" ~ args["vacancy"].id'),
         tokenKey: '_csrf_token',
     )]
     public function editRelease(
@@ -263,7 +263,7 @@ class AdminVacancyController extends AbstractController
             [
                 'admin' => true,
                 'company' => $vacancy->getCompany(),
-                'current_package_id' => $vacancy->getPackage()->getId(),
+                'current_package_id' => $vacancy->package->id,
                 'flow_key' => $run,
                 'finish_label' => $this->translator->trans('Save changes'),
             ],
@@ -322,7 +322,7 @@ class AdminVacancyController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"vacancy_revise-" ~ args["vacancy"].getId()'),
+        id: new Expression('"vacancy_revise-" ~ args["vacancy"].id'),
         tokenKey: '_csrf_token',
     )]
     public function revise(
@@ -379,7 +379,7 @@ class AdminVacancyController extends AbstractController
     {
         return $this->redirectToRoute(
             'admin/career/vacancies/edit',
-            ['vacancy' => $vacancy->getId()],
+            ['vacancy' => $vacancy->id],
         );
     }
 }

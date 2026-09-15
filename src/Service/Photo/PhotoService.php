@@ -89,7 +89,7 @@ final readonly class PhotoService
             $entries[] = $this->manifestEntry(
                 $photo,
                 $this->albumDeepLink($photo),
-                isset($hidden[intval($photo->getId())]),
+                isset($hidden[intval($photo->id)]),
             );
         }
 
@@ -102,9 +102,9 @@ final readonly class PhotoService
             'photo/album',
             [
                 'type' => 'album',
-                'album' => intval($photo->getAlbum()->getId()),
+                'album' => intval($photo->album->id),
             ],
-        ) . '#pid=' . intval($photo->getId());
+        ) . '#pid=' . intval($photo->id);
     }
 
     private function manifestEntry(
@@ -112,12 +112,12 @@ final readonly class PhotoService
         ?string $albumUrl = null,
         bool $hidden = false,
     ): ManifestEntry {
-        $path = $photo->getPath();
+        $path = $photo->path;
         // aspectRatio is height/width; a missing one falls back to square so the viewer still gets usable dimensions.
-        $aspectRatio = $photo->getAspectRatio() ?? 1.0;
+        $aspectRatio = $photo->aspectRatio ?? 1.0;
 
         return new ManifestEntry(
-            id: (int) $photo->getId(),
+            id: (int) $photo->id,
             w: self::REFERENCE_WIDTH,
             h: (int) round((float) self::REFERENCE_WIDTH * $aspectRatio),
             thumbUrl: $this->imageUrlBuilder->url(
@@ -137,13 +137,13 @@ final readonly class PhotoService
             downloadUrl: $this->urlGenerator->generate(
                 'photo/download',
                 [
-                    'album' => (int) $photo->getAlbum()->getId(),
-                    'photo' => (int) $photo->getId(),
+                    'album' => (int) $photo->album->id,
+                    'photo' => (int) $photo->id,
                 ],
             ),
             albumUrl: $albumUrl,
             hidden: $hidden,
-            potw: null !== $photo->getWeeklyPhoto(),
+            potw: null !== $photo->weeklyPhoto,
         );
     }
 }

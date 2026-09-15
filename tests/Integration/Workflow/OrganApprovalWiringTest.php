@@ -166,13 +166,13 @@ final class OrganApprovalWiringTest extends DatabaseTestCase
         $liveHandles = $live->getSocialHandles();
 
         $draft = $this->draft();
-        $draft->setShortDescription(new DecisionLocalisedText(
+        $draft->shortDescription = new DecisionLocalisedText(
             'Changed',
             'Gewijzigd',
-        ));
+        );
         $draft->updateSocialLinks([SocialPlatform::Twitch->value => 'somethingelse']);
         $this->entityManager->flush();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
 
         self::getContainer()->get(RevisionDiscarder::class)->discardToLive($draft);
         $this->entityManager->flush();
@@ -212,7 +212,7 @@ final class OrganApprovalWiringTest extends DatabaseTestCase
         $information = null;
 
         foreach (self::getContainer()->get(OrganInformationRepository::class)->findAll() as $candidate) {
-            if ($candidate->getOrgan()->getAbbr() !== $abbr) {
+            if ($candidate->organ->abbr !== $abbr) {
                 continue;
             }
 

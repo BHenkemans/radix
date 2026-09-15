@@ -98,7 +98,7 @@ class AdminPollApprovalController extends AbstractRevisionReviewController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"poll_review_comment-" ~ args["revision"].getId()'),
+        id: new Expression('"poll_review_comment-" ~ args["revision"].id'),
         tokenKey: '_csrf_token',
     )]
     public function comment(
@@ -145,7 +145,7 @@ class AdminPollApprovalController extends AbstractRevisionReviewController
             $expiryDate = $form->get('expiryDate')->getData();
             assert($expiryDate instanceof DateTime);
 
-            $revision->getPoll()->setExpiryDate($expiryDate);
+            $revision->poll->expiryDate = $expiryDate;
         }
 
         return parent::applyDecision(
@@ -199,9 +199,9 @@ class AdminPollApprovalController extends AbstractRevisionReviewController
         assert($revision instanceof PollRevision);
 
         return [
-            'poll' => $revision->getPoll(),
-            'subjectName' => $revision->getQuestion()->getText(Languages::current()) ?? '',
-            'comments' => $this->commentRepository->findThreadForPoll($revision->getPoll()),
+            'poll' => $revision->poll,
+            'subjectName' => $revision->question->getText(Languages::current()) ?? '',
+            'comments' => $this->commentRepository->findThreadForPoll($revision->poll),
         ];
     }
 
@@ -210,7 +210,7 @@ class AdminPollApprovalController extends AbstractRevisionReviewController
     {
         return $this->redirectToRoute(
             'admin/frontpage/polls/approvals/review',
-            ['revision' => $revision->getId()],
+            ['revision' => $revision->id],
         );
     }
 }

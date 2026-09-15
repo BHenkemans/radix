@@ -52,7 +52,7 @@ final class RevisionSubmissionStampTest extends DatabaseTestCase
         foreach (self::getContainer()->get(ActivityRevisionRepository::class)->findAll() as $revision) {
             if (
                 RevisionStatus::Draft !== $revision->getStatus()
-                || $revision->getActivity()->getBeginTime() < new DateTime()
+                || $revision->activity->getBeginTime() < new DateTime()
             ) {
                 continue;
             }
@@ -73,7 +73,7 @@ final class RevisionSubmissionStampTest extends DatabaseTestCase
 
         $user = $this->entityManager->find(
             User::class,
-            $author->getLidnr(),
+            $author->lidnr,
         );
         self::assertInstanceOf(
             User::class,

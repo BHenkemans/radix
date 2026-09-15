@@ -59,7 +59,7 @@ final readonly class SignupListOverviewRow
         }
 
         return new self(
-            id: $list->getId() ?? 0,
+            id: $list->id ?? 0,
             position: $position,
             name: SignupListRule::label(
                 $list,
@@ -84,19 +84,19 @@ final readonly class SignupListOverviewRow
     ): array {
         $chips = [];
 
-        if ($list->getOnlyGEWIS()) {
+        if ($list->onlyGEWIS) {
             $chips[] = $translator->trans('Members only');
         }
 
-        if ($list->getLimitedCapacity()) {
-            $capacity = $list->getCapacity();
+        if ($list->limitedCapacity) {
+            $capacity = $list->capacity;
             $chips[] = null !== $capacity
                 ? $translator->trans(
                     'Limited capacity (%capacity%)',
                     ['%capacity%' => $capacity],
                 )
                 : $translator->trans('Limited capacity');
-            $chips[] = $list->getAllocationMethod()->trans($translator);
+            $chips[] = $list->allocationMethod->trans($translator);
         }
 
         $questions = count($list->getFields());

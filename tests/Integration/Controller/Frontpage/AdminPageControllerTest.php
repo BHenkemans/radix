@@ -61,7 +61,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
         $page = $this->written();
         self::assertSame(
             UserRoles::User,
-            $page->getRequiredRole(),
+            $page->requiredRole,
         );
 
         $this->revise(
@@ -70,7 +70,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
         );
         self::assertSame(
             'A changed page',
-            $page->getTitle()->getValueEN(),
+            $page->title->getValueEN(),
         );
 
         $this->controller()->delete($page);
@@ -88,7 +88,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
     {
         $this->write(['content' => '<p onclick="alert(1)">Hello</p><script>alert(2)</script>']);
 
-        $stored = strval($this->written()->getContent()->getValueEN());
+        $stored = strval($this->written()->content->getValueEN());
 
         self::assertStringNotContainsString(
             'script',
@@ -136,7 +136,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
 
         self::assertSame(
             'Still here',
-            $page->getTitle()->getValueEN(),
+            $page->title->getValueEN(),
         );
     }
 
@@ -183,10 +183,10 @@ final class AdminPageControllerTest extends DatabaseTestCase
         $this->write();
         $page = $this->written();
 
-        $url = $this->upload(['page' => strval($page->getId())]);
+        $url = $this->upload(['page' => strval($page->id)]);
 
         self::assertMatchesRegularExpression(
-            '#^/img/w1280/pages/images/' . $page->getId() . '/#',
+            '#^/img/w1280/pages/images/' . $page->id . '/#',
             $url,
         );
     }
@@ -216,17 +216,17 @@ final class AdminPageControllerTest extends DatabaseTestCase
         $this->write(['content' => '<p><img src="' . $url . '"></p>']);
         $page = $this->written();
 
-        $stored = 'pages/images/' . $page->getId() . '/';
+        $stored = 'pages/images/' . $page->id . '/';
         self::assertStringContainsString(
             $stored,
-            strval($page->getContent()->getValueEN()),
+            strval($page->content->getValueEN()),
         );
         self::assertStringNotContainsString(
             'pending',
-            strval($page->getContent()->getValueEN()),
+            strval($page->content->getValueEN()),
         );
 
-        $images = self::getContainer()->get(PageImageStore::class)->list(strval($page->getId()));
+        $images = self::getContainer()->get(PageImageStore::class)->list(strval($page->id));
         self::assertCount(
             1,
             $images,
@@ -265,7 +265,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
         $this->write();
         $page = $this->written();
 
-        $url = $this->upload(['page' => strval($page->getId())]);
+        $url = $this->upload(['page' => strval($page->id)]);
         $thumbnail = str_replace(
             '/w1280/',
             '/w320/',
@@ -315,7 +315,7 @@ final class AdminPageControllerTest extends DatabaseTestCase
 
         // The topic travels in the hub URL, where it is escaped as a query parameter.
         self::assertStringContainsString(
-            'topic=' . urlencode('frontpage/page-images/' . $page->getId()),
+            'topic=' . urlencode('frontpage/page-images/' . $page->id),
             $this->browser($page),
         );
     }

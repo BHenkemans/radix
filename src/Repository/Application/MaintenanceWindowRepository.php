@@ -82,8 +82,8 @@ class MaintenanceWindowRepository extends ServiceEntityRepository
     public function findActiveAt(DateTimeImmutable $now): ?MaintenanceWindow
     {
         foreach ($this->findRelevantOn($now) as $window) {
-            $startsAt = $window->getStartsAt();
-            $endsAt = $window->getEndsAt();
+            $startsAt = $window->startsAt;
+            $endsAt = $window->endsAt;
 
             if (
                 (
@@ -116,7 +116,7 @@ class MaintenanceWindowRepository extends ServiceEntityRepository
      */
     public function findOverlapping(MaintenanceWindow $window): array
     {
-        $id = $window->getId();
+        $id = $window->id;
         if (null === $id) {
             $others = $this->findAll();
         } else {

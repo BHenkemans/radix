@@ -46,19 +46,19 @@ final readonly class CompanyRepresentativeService
             return false;
         }
 
-        $representative->setDisabledAt(new DateTime());
+        $representative->disabledAt = new DateTime();
 
         // Somebody who cannot sign in cannot be the contact either, so the company is left without one and the board
         // is asked to appoint a replacement.
-        if ($company->getPrimaryContact() === $representative) {
-            $company->setPrimaryContact(null);
+        if ($company->primaryContact === $representative) {
+            $company->primaryContact = null;
         }
 
         $this->auditLogger->log(
             $company,
             $actor,
             CompanyAuditVerbs::RepresentativeDisabled,
-            $representative->getName(),
+            $representative->name,
         );
 
         $this->entityManager->flush();
@@ -83,13 +83,13 @@ final readonly class CompanyRepresentativeService
             return false;
         }
 
-        $representative->setDisabledAt(null);
+        $representative->disabledAt = null;
 
         $this->auditLogger->log(
             $company,
             $actor,
             CompanyAuditVerbs::RepresentativeEnabled,
-            $representative->getName(),
+            $representative->name,
         );
 
         $this->entityManager->flush();
@@ -112,7 +112,7 @@ final readonly class CompanyRepresentativeService
             $company,
             $actor,
             CompanyAuditVerbs::RepresentativeRemoved,
-            $representative->getName(),
+            $representative->name,
         );
 
         $this->entityManager->remove($representative);
@@ -124,13 +124,13 @@ final readonly class CompanyRepresentativeService
         CompanyUser $representative,
         User $actor,
     ): void {
-        $company->setPrimaryContact($representative);
+        $company->primaryContact = $representative;
 
         $this->auditLogger->log(
             $company,
             $actor,
             CompanyAuditVerbs::PrimaryContactChanged,
-            $representative->getName(),
+            $representative->name,
         );
 
         $this->entityManager->flush();

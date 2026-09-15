@@ -27,16 +27,16 @@ final class NotificationRepositoryTest extends DatabaseTestCase
             $recent,
         );
         self::assertSame(
-            $seeded['new']->getId(),
-            $recent[0]->getId(),
+            $seeded['new']->id,
+            $recent[0]->id,
         );
         self::assertSame(
-            $seeded['mid']->getId(),
-            $recent[1]->getId(),
+            $seeded['mid']->id,
+            $recent[1]->id,
         );
         self::assertSame(
-            $seeded['old']->getId(),
-            $recent[2]->getId(),
+            $seeded['old']->id,
+            $recent[2]->id,
         );
     }
 
@@ -62,11 +62,11 @@ final class NotificationRepositoryTest extends DatabaseTestCase
         $this->entityManager->flush();
 
         self::assertSame(
-            [$mine->getId()],
+            [$mine->id],
             $this->ids($this->findFor(8025)),
         );
         self::assertSame(
-            [$theirs->getId()],
+            [$theirs->id],
             $this->ids($this->findFor(8000)),
         );
     }
@@ -106,8 +106,8 @@ final class NotificationRepositoryTest extends DatabaseTestCase
     {
         for ($i = 0; $i < 2; ++$i) {
             $notification = new Notification();
-            $notification->setType(NotificationType::AlbumPublished);
-            $notification->setCreatedAt(new DateTimeImmutable());
+            $notification->type = NotificationType::AlbumPublished;
+            $notification->createdAt = new DateTimeImmutable();
             $this->entityManager->persist($notification);
         }
 
@@ -169,7 +169,7 @@ final class NotificationRepositoryTest extends DatabaseTestCase
     private function ids(array $notifications): array
     {
         return array_map(
-            static fn (Notification $notification): ?int => $notification->getId(),
+            static fn (Notification $notification): ?int => $notification->id,
             $notifications,
         );
     }
@@ -177,13 +177,13 @@ final class NotificationRepositoryTest extends DatabaseTestCase
     private function addressed(int $lidnr): Notification
     {
         $notification = new Notification();
-        $notification->setType(NotificationType::AlbumPublished);
-        $notification->setContext(['browser' => 'Chrome 124']);
+        $notification->type = NotificationType::AlbumPublished;
+        $notification->context = ['browser' => 'Chrome 124'];
         $notification->setRecipient(
             $this->member($lidnr),
             null,
         );
-        $notification->setCreatedAt(new DateTimeImmutable());
+        $notification->createdAt = new DateTimeImmutable();
         $this->entityManager->persist($notification);
 
         return $notification;
@@ -194,9 +194,9 @@ final class NotificationRepositoryTest extends DatabaseTestCase
         DateTimeImmutable $createdAt,
     ): Notification {
         $notification = new Notification();
-        $notification->setType(NotificationType::AlbumPublished);
-        $notification->setSubjectId($subjectId);
-        $notification->setCreatedAt($createdAt);
+        $notification->type = NotificationType::AlbumPublished;
+        $notification->subjectId = $subjectId;
+        $notification->createdAt = $createdAt;
         $this->entityManager->persist($notification);
 
         return $notification;

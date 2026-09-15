@@ -78,8 +78,8 @@ final readonly class HomePageService
         $birthdays = array_values(array_map(
             static fn (Member $member): array => [
                 'member' => $member,
-                'age' => $ageVisibility[$member->getLidnr()] ?? false
-                    ? new DateTime()->diff($member->getBirth())->y
+                'age' => $ageVisibility[$member->lidnr] ?? false
+                    ? new DateTime()->diff($member->birth)->y
                     : null,
             ],
             $birthdayMembers,
@@ -110,7 +110,7 @@ final readonly class HomePageService
      */
     private function publicPathIfAvailable(WeeklyPhoto $weeklyPhoto): ?string
     {
-        $path = $this->weeklyPhotoService->publicPathFor($weeklyPhoto->getPhoto());
+        $path = $this->weeklyPhotoService->publicPathFor($weeklyPhoto->photo);
 
         return $this->fileStorage->exists($path)
             ? $path

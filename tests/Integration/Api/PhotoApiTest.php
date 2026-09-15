@@ -590,9 +590,9 @@ final class PhotoApiTest extends ApiTestCase
     public function testTheImageOfAPhotoIsServedAsWebPBytesAndAsksForNoContractVersion(): void
     {
         $photo = $this->aPhotoInAPublishedAlbum();
-        $this->store($photo->getPath());
+        $this->store($photo->path);
         $this->pregenerate(
-            $photo->getPath(),
+            $photo->path,
             ImageVariant::W320,
         );
 
@@ -625,10 +625,12 @@ final class PhotoApiTest extends ApiTestCase
             $path,
             ImageVariant::Cover,
         );
-        $this->entityManager->find(
+        $entity = $this->entityManager->find(
             AlbumEntity::class,
             $album,
-        )?->setCoverPath($path);
+        );
+        self::assertNotNull($entity);
+        $entity->coverPath = $path;
         $this->entityManager->flush();
 
         $response = $this->get(
@@ -662,10 +664,12 @@ final class PhotoApiTest extends ApiTestCase
         ));
         self::assertNull($without['data']['coverUrl']);
 
-        $this->entityManager->find(
+        $entity = $this->entityManager->find(
             AlbumEntity::class,
             $album,
-        )?->setCoverPath(StorageNamespace::PhotoCover->directory((string) $album) . '/mosaic.jpg');
+        );
+        self::assertNotNull($entity);
+        $entity->coverPath = StorageNamespace::PhotoCover->directory((string) $album) . '/mosaic.jpg';
         $this->entityManager->flush();
 
         $with = $this->json($this->get(
@@ -681,7 +685,7 @@ final class PhotoApiTest extends ApiTestCase
     public function testAPhotoOfAnUnpublishedAlbumHasNoImageToServe(): void
     {
         $photo = $this->aPhotoInAnUnpublishedAlbum();
-        $this->store($photo->getPath());
+        $this->store($photo->path);
 
         $response = $this->get(
             $this->imagePath($photo),
@@ -705,7 +709,7 @@ final class PhotoApiTest extends ApiTestCase
         foreach (
             [
                 '/api/photos/99999999/image/' . ImageVariant::W320->value,
-                '/api/photos/' . $this->aPhotoInAPublishedAlbum()->getId() . '/image/w9999',
+                '/api/photos/' . $this->aPhotoInAPublishedAlbum()->id . '/image/w9999',
             ] as $path
         ) {
             $response = $this->get(
@@ -733,7 +737,7 @@ final class PhotoApiTest extends ApiTestCase
         foreach (
             [
                 '/api/photos/seventeen/image/' . ImageVariant::W320->value,
-                '/api/photos/' . $this->aPhotoInAPublishedAlbum()->getId() . '/image/W320',
+                '/api/photos/' . $this->aPhotoInAPublishedAlbum()->id . '/image/W320',
             ] as $path
         ) {
             $response = $this->get(
@@ -756,7 +760,7 @@ final class PhotoApiTest extends ApiTestCase
 
     private function imagePath(PhotoEntity $photo): string
     {
-        return '/api/photos/' . $photo->getId() . '/image/' . ImageVariant::W320->value;
+        return '/api/photos/' . $photo->id . '/image/' . ImageVariant::W320->value;
     }
 
     private function bytes(Response $response): string
@@ -798,7 +802,7 @@ final class PhotoApiTest extends ApiTestCase
         $weeklyPhoto = self::getContainer()->get(WeeklyPhotoRepository::class)->getCurrentPhotoOfTheWeek();
         self::assertNotNull($weeklyPhoto);
 
-        $path = self::getContainer()->get(WeeklyPhotoService::class)->publicPathFor($weeklyPhoto->getPhoto());
+        $path = self::getContainer()->get(WeeklyPhotoService::class)->publicPathFor($weeklyPhoto->photo);
         $this->store($path);
 
         return $path;
@@ -810,7 +814,7 @@ final class PhotoApiTest extends ApiTestCase
             $template,
             [
                 '{album}' => (string) $this->aPublishedAlbumWithSeveralPhotos(),
-                '{photo}' => (string) $this->aPhotoInAPublishedAlbum()->getId(),
+                '{photo}' => (string) $this->aPhotoInAPublishedAlbum()->id,
                 '{variant}' => ImageVariant::W320->value,
                 '{cover}' => ImageVariant::Cover->value,
             ],
@@ -902,10 +906,10 @@ final class PhotoApiTest extends ApiTestCase
             $tag,
         );
 
-        $tag->getMember()->setDeleted(true);
+        $tag->member->deleted = true;
         $this->entityManager->flush();
 
-        return $tag->getMember()->getLidnr();
+        return $tag->member->lidnr;
     }
 
     private function aPublishedAlbumWithSeveralPhotos(): int

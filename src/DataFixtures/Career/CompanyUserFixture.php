@@ -74,18 +74,18 @@ class CompanyUserFixture extends Fixture implements DependentFixtureInterface, F
 
             foreach ($representatives as $index => $representative) {
                 $companyUser = new CompanyUser();
-                $companyUser->setCompany($company);
-                $companyUser->setName($representative['name']);
-                $companyUser->setEmail($representative['email']);
+                $companyUser->company = $company;
+                $companyUser->name = $representative['name'];
+                $companyUser->email = $representative['email'];
                 $companyUser->setPassword(self::PASSWORD_HASH);
                 $companyUser->setPasswordChangedOn(new DateTime());
 
                 if ($representative['disabled'] ?? false) {
-                    $companyUser->setDisabledAt(new DateTime('2025-11-01'));
+                    $companyUser->disabledAt = new DateTime('2025-11-01');
                 }
 
                 if (0 === $index) {
-                    $company->setPrimaryContact($companyUser);
+                    $company->primaryContact = $companyUser;
                 }
 
                 $manager->persist($companyUser);

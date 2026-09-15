@@ -202,7 +202,7 @@ final class PhotoControllerTest extends DatabaseTestCase
         $this->pushRequest();
         $weekly = self::getContainer()->get(WeeklyPhotoRepository::class)->getCurrentPhotoOfTheWeek();
         self::assertNotNull($weekly);
-        $year = AssociationYear::fromDate($weekly->getWeek())->getYear();
+        $year = AssociationYear::fromDate($weekly->week)->getYear();
 
         $response = $this->controller()->album(
             AlbumType::Weekly,
@@ -233,7 +233,7 @@ final class PhotoControllerTest extends DatabaseTestCase
         );
         $weekly = self::getContainer()->get(WeeklyPhotoRepository::class)->getCurrentPhotoOfTheWeek();
         self::assertNotNull($weekly);
-        $year = AssociationYear::fromDate($weekly->getWeek())->getYear();
+        $year = AssociationYear::fromDate($weekly->week)->getYear();
 
         $entries = json_decode(
             (string) $this->controller()->weeklyManifest($year)->getContent(),
@@ -376,10 +376,10 @@ final class PhotoControllerTest extends DatabaseTestCase
             UserRoles::Member,
         );
         $photo = $this->storedTripPhoto();
-        $photoId = (int) $photo->getId();
+        $photoId = (int) $photo->id;
 
         $response = $this->controller()->download(
-            $photo->getAlbum()->getId() ?? 0,
+            $photo->album->id ?? 0,
             $photoId,
         );
 
@@ -412,7 +412,7 @@ final class PhotoControllerTest extends DatabaseTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->controller()->download(
             $otherAlbum,
-            (int) $photo->getId(),
+            (int) $photo->id,
         );
     }
 
@@ -430,7 +430,7 @@ final class PhotoControllerTest extends DatabaseTestCase
             'The seed is expected to contain the album.',
         );
 
-        return (int) $album->getId();
+        return (int) $album->id;
     }
 
     /**
@@ -447,9 +447,9 @@ final class PhotoControllerTest extends DatabaseTestCase
 
         $organTagRepository = self::getContainer()->get(OrganTagRepository::class);
         foreach (self::getContainer()->get(PhotoRepository::class)->getAlbumPhotos($album) as $photo) {
-            $tags = $organTagRepository->findByPhotoWithOrgan((int) $photo->getId());
+            $tags = $organTagRepository->findByPhotoWithOrgan((int) $photo->id);
             if ([] !== $tags) {
-                return (int) $tags[0]->getOrgan()->getId();
+                return (int) $tags[0]->organ->id;
             }
         }
 
@@ -465,7 +465,7 @@ final class PhotoControllerTest extends DatabaseTestCase
             'The seed is expected to contain an unpublished album.',
         );
 
-        return (int) $album->getId();
+        return (int) $album->id;
     }
 
     /**
@@ -499,15 +499,15 @@ final class PhotoControllerTest extends DatabaseTestCase
         $stored = self::getContainer()->get(FileStorage::class)->store(
             StorageNamespace::PhotoOriginal,
             $temporaryFile,
-            (string) $album->getId(),
+            (string) $album->id,
         );
         unlink($temporaryFile);
 
         $photo = new Photo();
-        $photo->setAlbum($album);
-        $photo->setPath($stored->path);
-        $photo->setDateTime(new DateTime());
-        $photo->setAspectRatio(1.0);
+        $photo->album = $album;
+        $photo->path = $stored->path;
+        $photo->dateTime = new DateTime();
+        $photo->aspectRatio = 1.0;
         $this->entityManager->persist($photo);
         $this->entityManager->flush();
 

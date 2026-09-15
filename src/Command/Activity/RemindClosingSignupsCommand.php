@@ -106,7 +106,7 @@ final class RemindClosingSignupsCommand extends Command
         $reminded = 0;
         foreach ($lists as $list) {
             $reminded += $this->remind($list);
-            $list->setRemindedAt(new DateTimeImmutable());
+            $list->remindedAt = new DateTimeImmutable();
         }
 
         $this->entityManager->flush();
@@ -125,7 +125,7 @@ final class RemindClosingSignupsCommand extends Command
      */
     private function remind(SignupList $list): int
     {
-        $activityId = $list->getActivity()->getId();
+        $activityId = $list->getActivity()->id;
         if (null === $activityId) {
             return 0;
         }
@@ -136,7 +136,7 @@ final class RemindClosingSignupsCommand extends Command
 
         $context = [
             'activity' => strval($activityId),
-            'list' => $list->getName()->getText(Languages::English) ?? '',
+            'list' => $list->name->getText(Languages::English) ?? '',
         ];
 
         $reminded = 0;
@@ -145,7 +145,7 @@ final class RemindClosingSignupsCommand extends Command
                 continue;
             }
 
-            $user = $this->userRepository->find($signup->getUser()->getLidnr());
+            $user = $this->userRepository->find($signup->user->lidnr);
             if (null === $user) {
                 continue;
             }

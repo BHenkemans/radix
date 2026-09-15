@@ -44,12 +44,12 @@ final class CareerNotificationSubjectNamer extends AbstractNotificationSubjectNa
 
         if (NotificationType::VacancyRevisionAwaitingReview === $type) {
             foreach ($this->vacancyRevisionRepository->findBy(['id' => $subjectIds]) as $revision) {
-                $id = $revision->getId();
+                $id = $revision->id;
                 if (null === $id) {
                     continue;
                 }
 
-                $names[$id] = $this->localised($revision->getName());
+                $names[$id] = $this->localised($revision->name);
             }
 
             return $names;
@@ -60,12 +60,12 @@ final class CareerNotificationSubjectNamer extends AbstractNotificationSubjectNa
             : $this->bannerPackageRepository->findBy(['id' => $subjectIds]);
 
         foreach ($subjects as $subject) {
-            $id = $subject->getId();
+            $id = $subject->id;
             if (null === $id) {
                 continue;
             }
 
-            $names[$id] = $this->plain($subject->getCompany()->getName());
+            $names[$id] = $this->plain($subject->company->name);
         }
 
         return $names;

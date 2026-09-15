@@ -74,10 +74,10 @@ final class CompanyHighlightControllerTest extends DatabaseTestCase
             $package,
             [
                 'csrf_protection' => false,
-                'company' => $companyUser->getCompany(),
+                'company' => $companyUser->company,
             ],
         );
-        $form->submit(['vacancies' => [(string) $this->vacancy('data-science-internship')->getId()]]);
+        $form->submit(['vacancies' => [(string) $this->vacancy('data-science-internship')->id]]);
 
         self::assertFalse($form->isValid());
     }
@@ -92,10 +92,10 @@ final class CompanyHighlightControllerTest extends DatabaseTestCase
             $package,
             [
                 'csrf_protection' => false,
-                'company' => $companyUser->getCompany(),
+                'company' => $companyUser->company,
             ],
         );
-        $form->submit(['vacancies' => [(string) $this->vacancy('backend-engineer')->getId()]]);
+        $form->submit(['vacancies' => [(string) $this->vacancy('backend-engineer')->id]]);
 
         self::assertTrue(
             $form->isValid(),

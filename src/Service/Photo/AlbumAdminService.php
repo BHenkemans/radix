@@ -38,7 +38,7 @@ final readonly class AlbumAdminService
      */
     public function regenerateCover(Album $album): void
     {
-        $this->messageBus->dispatch(new GenerateAlbumCoverMessage(intval($album->getId())));
+        $this->messageBus->dispatch(new GenerateAlbumCoverMessage(intval($album->id)));
     }
 
     /**
@@ -56,13 +56,13 @@ final readonly class AlbumAdminService
         $affectedAlbumIds = [];
         $moved = 0;
         foreach ($photos as $photo) {
-            $source = $photo->getAlbum();
-            if ($source->getId() === $destination->getId()) {
+            $source = $photo->album;
+            if ($source->id === $destination->id) {
                 continue;
             }
 
-            $affectedAlbumIds[intval($source->getId())] = true;
-            $photo->setAlbum($destination);
+            $affectedAlbumIds[intval($source->id)] = true;
+            $photo->album = $destination;
             ++$moved;
         }
 
@@ -72,7 +72,7 @@ final readonly class AlbumAdminService
 
         $this->entityManager->flush();
 
-        $affectedAlbumIds[intval($destination->getId())] = true;
+        $affectedAlbumIds[intval($destination->id)] = true;
         foreach (array_keys($affectedAlbumIds) as $albumId) {
             $this->messageBus->dispatch(new GenerateAlbumCoverMessage($albumId));
         }
@@ -90,8 +90,8 @@ final readonly class AlbumAdminService
         $paths = [];
         $albumIds = [];
         foreach ($photos as $photo) {
-            $paths[] = $photo->getPath();
-            $albumIds[intval($photo->getAlbum()->getId())] = true;
+            $paths[] = $photo->path;
+            $albumIds[intval($photo->album->id)] = true;
             $this->entityManager->remove($photo);
         }
 
@@ -162,10 +162,10 @@ final readonly class AlbumAdminService
         }
 
         foreach ($album->getPhotos() as $photo) {
-            $paths[] = $photo->getPath();
+            $paths[] = $photo->path;
         }
 
-        $coverPath = $album->getCoverPath();
+        $coverPath = $album->coverPath;
         if (null === $coverPath) {
             return;
         }

@@ -92,10 +92,10 @@ final class StudentEmailExtensionTest extends TestCase
     private function member(?string $email): User
     {
         $member = self::createStub(Member::class);
-        $member->method('getEmail')->willReturn($email);
+        $member->email = $email;
 
         $user = self::createStub(User::class);
-        $user->method('getMember')->willReturn($member);
+        $user->member = $member;
 
         return $user;
     }

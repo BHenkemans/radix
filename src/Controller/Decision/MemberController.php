@@ -65,7 +65,7 @@ class MemberController extends AbstractController
     {
         $user = $this->getUser();
         assert($user instanceof User);
-        $member = $user->getMember();
+        $member = $user->member;
 
         $recentMeetings = [];
         foreach (
@@ -237,7 +237,7 @@ class MemberController extends AbstractController
             null !== $request->attributes->get('member')
             && (
                 null === $member
-                || true === $member->getDeleted()
+                || true === $member->deleted
             )
         ) {
             throw $this->createNotFoundException();
@@ -247,7 +247,7 @@ class MemberController extends AbstractController
             $user = $this->getUser();
             assert($user instanceof User);
 
-            $member = $user->getMember();
+            $member = $user->member;
         } else {
             if (
                 $member->isExpired()
@@ -257,7 +257,7 @@ class MemberController extends AbstractController
             }
         }
 
-        $profilePhoto = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->getLidnr());
+        $profilePhoto = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->lidnr);
 
         return $this->render(
             'decision/member.html.twig',
@@ -265,7 +265,7 @@ class MemberController extends AbstractController
                 'member' => $member,
                 'committees' => $this->memberInfoService->getOrganMemberships($member),
                 'board' => $this->memberInfoService->getBoardMemberships($member),
-                'profilePhoto' => $profilePhoto?->getPhoto(),
+                'profilePhoto' => $profilePhoto?->photo,
             ],
         );
     }

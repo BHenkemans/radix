@@ -112,10 +112,10 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
         $draft->setStatus(RevisionStatus::Submitted);
         $draft->setSubmittedAt(new DateTime('-2 days'));
         $draft->setAuthorCompanyUser($author);
-        $draft->setSlogan(new CareerLocalisedText(
+        $draft->slogan = new CareerLocalisedText(
             self::SUBMITTED_SLOGAN,
             'Sneller van data naar beslissingen',
-        ));
+        );
 
         $manager->persist($draft);
     }
@@ -132,20 +132,18 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
         $draft = $this->nextProfileDraft($company);
         $draft->setStatus(RevisionStatus::Rejected);
         $draft->setAuthorCompanyUser($author);
-        $draft->setReviewer($reviewer->getMember());
+        $draft->setReviewer($reviewer->member);
         $draft->setReviewedAt(new DateTime('-3 days'));
-        $draft->setDescription(new CareerLocalisedText(
+        $draft->description = new CareerLocalisedText(
             'Delta Robotics builds cobots. Contact us at info@example.com for a quote.',
             'Delta Robotics bouwt cobots. Neem contact op via info@example.com voor een offerte.',
-        ));
+        );
 
         $comment = new CompanyRevisionComment();
         $comment->setRevision($draft);
-        $comment->setAuthor($reviewer);
-        $comment->setBody(
-            'The description reads as an advertisement rather than as a profile. Please tell our members what it is '
-            . 'like to work with you instead.',
-        );
+        $comment->author = $reviewer;
+        $comment->body = 'The description reads as an advertisement rather than as a profile. Please tell our '
+            . 'members what it is like to work with you instead.';
 
         $manager->persist($draft);
         $manager->persist($comment);
@@ -175,13 +173,13 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
         );
         $reviewed->setStatus(RevisionStatus::ChangesRequested);
         $reviewed->setAuthorCompanyUser($author);
-        $reviewed->setReviewer($reviewer->getMember());
+        $reviewed->setReviewer($reviewer->member);
         $reviewed->setReviewedAt(new DateTime('-5 days'));
 
         $feedback = new VacancyRevisionComment();
         $feedback->setRevision($reviewed);
-        $feedback->setAuthor($reviewer);
-        $feedback->setBody('Could you say something about the salary range? Our members ask us about it every year.');
+        $feedback->author = $reviewer;
+        $feedback->body = 'Could you say something about the salary range? Our members ask us about it every year.';
 
         $next = $this->cloneVacancyRevision(
             $vacancy,
@@ -193,8 +191,8 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
 
         $reply = new VacancyRevisionComment();
         $reply->setRevision($next);
-        $reply->setAuthorCompanyUser($author);
-        $reply->setBody('Added the range to the description. Let us know if it needs to be more specific.');
+        $reply->authorCompanyUser = $author;
+        $reply->body = 'Added the range to the description. Let us know if it needs to be more specific.';
 
         $manager->persist($reviewed);
         $manager->persist($feedback);
@@ -219,7 +217,7 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
             $package->proposeImage(
                 $this->imageGenerator->storeBanner(
                     $company,
-                    $package->getFormat(),
+                    $package->format,
                     self::SUBMITTED_SLOGAN,
                 ),
                 $author,
@@ -262,15 +260,15 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
         $draft = new CompanyRevision();
         $draft->setRevisionNumber($source->getRevisionNumber() + 1);
         $draft->setPreviousRevision($source);
-        $draft->setSlogan($source->getSlogan()->copy());
-        $draft->setWebsite($source->getWebsite()->copy());
-        $draft->setDescription($source->getDescription()->copy());
-        $draft->setSquareLogo($source->getSquareLogo());
-        $draft->setBannerLogo($source->getBannerLogo());
-        $draft->setContactName($source->getContactName());
-        $draft->setContactEmail($source->getContactEmail());
-        $draft->setContactPhone($source->getContactPhone());
-        $draft->setContactAddress($source->getContactAddress());
+        $draft->slogan = $source->slogan->copy();
+        $draft->website = $source->website->copy();
+        $draft->description = $source->description->copy();
+        $draft->squareLogo = $source->squareLogo;
+        $draft->bannerLogo = $source->bannerLogo;
+        $draft->contactName = $source->contactName;
+        $draft->contactEmail = $source->contactEmail;
+        $draft->contactPhone = $source->contactPhone;
+        $draft->contactAddress = $source->contactAddress;
 
         $company->addRevision($draft);
         $company->setCurrentRevision($draft);
@@ -285,17 +283,17 @@ class CareerReviewFixture extends Fixture implements DependentFixtureInterface, 
         $draft = new VacancyRevision();
         $draft->setRevisionNumber($source->getRevisionNumber() + 1);
         $draft->setPreviousRevision($source);
-        $draft->setName($source->getName()->copy());
-        $draft->setLocation($source->getLocation()->copy());
-        $draft->setWebsite($source->getWebsite()->copy());
-        $draft->setDescription($source->getDescription()->copy());
-        $draft->setAttachment($source->getAttachment()->copy());
-        $draft->setContactName($source->getContactName());
-        $draft->setContactPhone($source->getContactPhone());
-        $draft->setContactEmail($source->getContactEmail());
-        $draft->setCategory($source->getCategory());
-        $draft->setStartDate($source->getStartDate());
-        $draft->setEndDate($source->getEndDate());
+        $draft->name = $source->name->copy();
+        $draft->location = $source->location->copy();
+        $draft->website = $source->website->copy();
+        $draft->description = $source->description->copy();
+        $draft->attachment = $source->attachment->copy();
+        $draft->contactName = $source->contactName;
+        $draft->contactPhone = $source->contactPhone;
+        $draft->contactEmail = $source->contactEmail;
+        $draft->category = $source->category;
+        $draft->startDate = $source->startDate;
+        $draft->endDate = $source->endDate;
         $draft->addLabels($source->getLabels()->toArray());
 
         $vacancy->addRevision($draft);

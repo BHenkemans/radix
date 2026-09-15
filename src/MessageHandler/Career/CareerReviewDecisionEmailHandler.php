@@ -62,12 +62,12 @@ class CareerReviewDecisionEmailHandler
         foreach ($this->companyUserRepository->findActiveForCompany($company) as $companyUser) {
             $this->mailer->send(
                 new TemplatedEmail()
-                    ->to($companyUser->getEmail())
+                    ->to($companyUser->email)
                     ->subject($subject)
                     ->htmlTemplate('emails/career/review-decision.html.twig')
                     ->context([
-                        'fullName' => $companyUser->getName(),
-                        'companyName' => $company->getName(),
+                        'fullName' => $companyUser->name,
+                        'companyName' => $company->name,
                         'subjectName' => $message->getSubjectName(),
                         'isVacancy' => $message->isVacancy(),
                         'outcome' => $outcome->value,

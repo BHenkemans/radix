@@ -9,6 +9,7 @@ use App\Entity\Decision\MeetingPoint;
 use App\Service\Decision\MeetingPointDecisionMatcher;
 use Override;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 final class MeetingPointDecisionMatcherTest extends TestCase
 {
@@ -154,8 +155,15 @@ final class MeetingPointDecisionMatcherTest extends TestCase
         string $number,
     ): MeetingPoint {
         $point = new MeetingPoint();
-        $point->setId($id);
-        $point->setNumber($number);
+        // By reflection, because the identifier is Doctrine's to assign, and a point is told apart by it here.
+        new ReflectionProperty(
+            MeetingPoint::class,
+            'id',
+        )->setValue(
+            $point,
+            $id,
+        );
+        $point->number = $number;
 
         return $point;
     }
@@ -163,7 +171,7 @@ final class MeetingPointDecisionMatcherTest extends TestCase
     private function decision(int $point): Decision
     {
         $decision = new Decision();
-        $decision->setPoint($point);
+        $decision->point = $point;
 
         return $decision;
     }

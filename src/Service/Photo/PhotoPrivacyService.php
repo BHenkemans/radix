@@ -61,7 +61,7 @@ final readonly class PhotoPrivacyService
             ];
         }
 
-        $level = $this->settingsRepository->find($member->getLidnr())?->getPhotoVisibility()
+        $level = $this->settingsRepository->find($member->lidnr)->photoVisibility
             ?? PhotoVisibility::HideSelected;
 
         // Others never learn which photos are hidden, so the hidden ids are dropped from the result. HideSelected with
@@ -95,7 +95,7 @@ final readonly class PhotoPrivacyService
 
         return array_values(array_filter(
             $photos,
-            static fn (Photo $photo): bool => !isset($hidden[intval($photo->getId())]),
+            static fn (Photo $photo): bool => !isset($hidden[intval($photo->id)]),
         ));
     }
 
@@ -111,17 +111,17 @@ final readonly class PhotoPrivacyService
         array $photos,
     ): void {
         $photoIds = array_map(
-            static fn (Photo $photo): int => intval($photo->getId()),
+            static fn (Photo $photo): int => intval($photo->id),
             $photos,
         );
         $tagged = $this->memberTagRepository->findTaggedPhotoIds(
-            $member->getLidnr(),
+            $member->lidnr,
             $photoIds,
         );
         $alreadyHidden = $this->hiddenPhotoRepository->getHiddenPhotoIds($member);
 
         foreach ($photos as $photo) {
-            $id = intval($photo->getId());
+            $id = intval($photo->id);
             if (
                 !isset($tagged[$id])
                 || isset($alreadyHidden[$id])
@@ -130,8 +130,8 @@ final readonly class PhotoPrivacyService
             }
 
             $hiddenPhoto = new HiddenPhoto();
-            $hiddenPhoto->setMember($member);
-            $hiddenPhoto->setPhoto($photo);
+            $hiddenPhoto->member = $member;
+            $hiddenPhoto->photo = $photo;
             $this->entityManager->persist($hiddenPhoto);
         }
 
@@ -147,7 +147,7 @@ final readonly class PhotoPrivacyService
         array $photos,
     ): void {
         $photoIds = array_map(
-            static fn (Photo $photo): int => intval($photo->getId()),
+            static fn (Photo $photo): int => intval($photo->id),
             $photos,
         );
         foreach (
@@ -164,7 +164,7 @@ final readonly class PhotoPrivacyService
 
     private function clearProfilePhotoIfHidden(Member $member): void
     {
-        $profilePhoto = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->getLidnr());
+        $profilePhoto = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->lidnr);
         if (null === $profilePhoto) {
             return;
         }
@@ -172,7 +172,7 @@ final readonly class PhotoPrivacyService
         if (
             null === $this->hiddenPhotoRepository->findByMemberAndPhoto(
                 $member,
-                $profilePhoto->getPhoto(),
+                $profilePhoto->photo,
             )
         ) {
             return;
@@ -186,6 +186,6 @@ final readonly class PhotoPrivacyService
         $viewer = $this->security->getUser();
 
         return $viewer instanceof User
-            && $viewer->getMember()->getLidnr() === $member->getLidnr();
+            && $viewer->member->lidnr === $member->lidnr;
     }
 }

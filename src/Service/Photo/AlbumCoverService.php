@@ -59,7 +59,7 @@ final readonly class AlbumCoverService
         $data = [];
         $portrait = 0;
         foreach ($photos as $photo) {
-            $bytes = $this->fileStorage->read($photo->getPath());
+            $bytes = $this->fileStorage->read($photo->path);
             $data[] = $bytes;
 
             $size = getimagesizefromstring($bytes);
@@ -103,7 +103,7 @@ final readonly class AlbumCoverService
         // Content-address the mosaic within the album's own scope, so an unchanged album keeps the same cover path.
         $path = sprintf(
             '%s/%s.webp',
-            StorageNamespace::PhotoCover->directory((string) $album->getId()),
+            StorageNamespace::PhotoCover->directory((string) $album->id),
             hash(
                 'sha256',
                 $bytes,
@@ -113,7 +113,7 @@ final readonly class AlbumCoverService
             $path,
             $bytes,
         );
-        $album->setCoverPath($path);
+        $album->coverPath = $path;
 
         return $path;
     }

@@ -26,17 +26,7 @@ class OrganTag extends Tag
         name: 'organ_id',
         referencedColumnName: 'id',
     )]
-    private Organ $organ;
-
-    public function getOrgan(): Organ
-    {
-        return $this->organ;
-    }
-
-    public function setOrgan(Organ $organ): void
-    {
-        $this->organ = $organ;
-    }
+    public Organ $organ;
 
     /**
      * Returns the tag as an associative array.
@@ -50,9 +40,9 @@ class OrganTag extends Tag
     public function toArray(): array
     {
         return [
-            'id' => $this->getId(),
-            'photo_id' => $this->getPhoto()->getId(),
-            'organ_id' => $this->getOrgan()->getId(),
+            'id' => $this->id,
+            'photo_id' => $this->photo->id,
+            'organ_id' => $this->organ->id,
         ];
     }
 }

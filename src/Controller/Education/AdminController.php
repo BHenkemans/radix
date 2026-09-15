@@ -145,7 +145,7 @@ class AdminController extends AbstractController
 
             return $this->redirectToRoute(
                 'admin/education/courses/documents',
-                ['code' => $course->getCode()],
+                ['code' => $course->code],
             );
         }
 
@@ -204,12 +204,12 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"education_document_delete-" ~ args["document"].getId()'),
+        id: new Expression('"education_document_delete-" ~ args["document"].id'),
         tokenKey: '_csrf_token',
     )]
     public function deleteDocument(CourseDocument $document): Response
     {
-        $code = $document->getCourse()->getCode();
+        $code = $document->course->code;
 
         $this->courseAdminService->deleteDocument($document);
 
@@ -235,12 +235,12 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"education_document_reprocess-" ~ args["document"].getId()'),
+        id: new Expression('"education_document_reprocess-" ~ args["document"].id'),
         tokenKey: '_csrf_token',
     )]
     public function reprocessDocument(CourseDocument $document): Response
     {
-        $this->messageBus->dispatch(new FlattenCourseDocumentMessage($document->getId() ?? 0));
+        $this->messageBus->dispatch(new FlattenCourseDocumentMessage($document->id ?? 0));
 
         $this->addFlash(
             AlertTypes::Success->value,
@@ -249,7 +249,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/education/courses/documents',
-            ['code' => $document->getCourse()->getCode()],
+            ['code' => $document->course->code],
         );
     }
 

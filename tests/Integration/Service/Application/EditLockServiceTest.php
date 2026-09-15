@@ -40,15 +40,15 @@ final class EditLockServiceTest extends DatabaseTestCase
             $lock,
         );
         self::assertSame(
-            $holder->getLidnr(),
-            $lock->getLockedBy()?->getLidnr(),
+            $holder->lidnr,
+            $lock->lockedBy?->lidnr,
         );
-        self::assertNull($lock->getLockedByCompanyUser());
+        self::assertNull($lock->lockedByCompanyUser);
         self::assertTrue($this->service()->isAlive($lock));
         // It is persisted under the resource's key, so a later look-up finds the same row.
         self::assertNotNull($this->locks()->findOneByResource(
             $resource->getResourceId(),
-            (int) $resource->getId(),
+            (int) $resource->id,
         ));
     }
 
@@ -76,8 +76,8 @@ final class EditLockServiceTest extends DatabaseTestCase
         );
         // The same row is refreshed, never a second lock for the same resource.
         self::assertSame(
-            $first->getId(),
-            $second->getId(),
+            $first->id,
+            $second->id,
         );
     }
 
@@ -101,11 +101,11 @@ final class EditLockServiceTest extends DatabaseTestCase
         // The original holder keeps the lock.
         $lock = $this->locks()->findOneByResource(
             $resource->getResourceId(),
-            (int) $resource->getId(),
+            (int) $resource->id,
         );
         self::assertSame(
-            $holder->getLidnr(),
-            $lock?->getLockedBy()?->getLidnr(),
+            $holder->lidnr,
+            $lock?->lockedBy?->lidnr,
         );
     }
 
@@ -128,8 +128,8 @@ final class EditLockServiceTest extends DatabaseTestCase
 
         // The reviewer force-takes the still-alive lock from the original holder.
         self::assertSame(
-            $reviewer->getLidnr(),
-            $taken?->getLockedBy()?->getLidnr(),
+            $reviewer->lidnr,
+            $taken?->lockedBy?->lidnr,
         );
     }
 
@@ -158,8 +158,8 @@ final class EditLockServiceTest extends DatabaseTestCase
         // An abandoned (un-pinged past the TTL) lock is taken over silently, so an editor who left frees it without a
         // forced take-over.
         self::assertSame(
-            $other->getLidnr(),
-            $taken?->getLockedBy()?->getLidnr(),
+            $other->lidnr,
+            $taken?->lockedBy?->lidnr,
         );
     }
 
@@ -248,7 +248,7 @@ final class EditLockServiceTest extends DatabaseTestCase
         );
         self::assertNotNull($this->locks()->findOneByResource(
             $resource->getResourceId(),
-            (int) $resource->getId(),
+            (int) $resource->id,
         ));
 
         // ... but the holder can.
@@ -258,7 +258,7 @@ final class EditLockServiceTest extends DatabaseTestCase
         );
         self::assertNull($this->locks()->findOneByResource(
             $resource->getResourceId(),
-            (int) $resource->getId(),
+            (int) $resource->id,
         ));
     }
 
@@ -316,7 +316,7 @@ final class EditLockServiceTest extends DatabaseTestCase
         $this->entityManager->flush();
         self::assertNull($this->locks()->findOneByResource(
             $resource->getResourceId(),
-            (int) $resource->getId(),
+            (int) $resource->id,
         ));
     }
 
@@ -372,10 +372,10 @@ final class EditLockServiceTest extends DatabaseTestCase
      */
     private function makeStale(EditLock $lock): void
     {
-        $lock->setLastPingAt(new DateTime(sprintf(
+        $lock->lastPingAt = new DateTime(sprintf(
             '-%d seconds',
             EditLockService::TTL_SECONDS + 30,
-        )));
+        ));
         $this->entityManager->flush();
     }
 }

@@ -165,7 +165,7 @@ class PollRepository extends ServiceEntityRepository
 
         foreach ($polls as $poll) {
             foreach ($poll->getOptions() as $option) {
-                $option->setCountedVotes($counted[intval($option->getId())] ?? 0);
+                $option->setCountedVotes($counted[intval($option->id)] ?? 0);
             }
         }
     }
@@ -263,7 +263,7 @@ class PollRepository extends ServiceEntityRepository
                 : 'NOT ' . $exists)
                 ->setParameter(
                     'member',
-                    $member->getLidnr(),
+                    $member->lidnr,
                 );
         }
 
@@ -290,11 +290,11 @@ class PollRepository extends ServiceEntityRepository
             ->andWhere('p.expiryDate <= :expiryDate')
             ->setParameter(
                 'poll',
-                $poll->getId(),
+                $poll->id,
             )
             ->setParameter(
                 'expiryDate',
-                $poll->getExpiryDate(),
+                $poll->expiryDate,
                 Types::DATE_MUTABLE,
             )
             ->orderBy(
@@ -365,7 +365,7 @@ class PollRepository extends ServiceEntityRepository
             ->where('p.creator = :member')
             ->setParameter(
                 'member',
-                $member->getLidnr(),
+                $member->lidnr,
             )
             ->getQuery()
             ->getResult();

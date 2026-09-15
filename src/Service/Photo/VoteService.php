@@ -30,8 +30,8 @@ final readonly class VoteService
     ): void {
         if (
             null !== $this->voteRepository->findVote(
-                (int) $photo->getId(),
-                $voter->getLidnr(),
+                (int) $photo->id,
+                $voter->lidnr,
             )
         ) {
             return;

@@ -110,7 +110,7 @@ class PollController extends AbstractController
         ) {
             $poll = $this->pollService->requestPoll(
                 $revision,
-                $user->getMember(),
+                $user->member,
                 $previous,
             );
 
@@ -121,7 +121,7 @@ class PollController extends AbstractController
 
             return $this->redirectToRoute(
                 'poll/view',
-                ['poll' => $poll->getId()],
+                ['poll' => $poll->id],
             );
         }
 
@@ -218,7 +218,7 @@ class PollController extends AbstractController
         Poll $poll,
         User $user,
     ): ?Poll {
-        if ($poll->getCreator()?->getLidnr() !== $user->getLidnr()) {
+        if ($poll->getCreator()?->lidnr !== $user->lidnr) {
             return null;
         }
 
@@ -246,11 +246,11 @@ class PollController extends AbstractController
             return;
         }
 
-        $revision->setQuestion($head->getQuestion()->copy());
+        $revision->question = $head->question->copy();
 
         foreach ($head->getOptions() as $option) {
             $copy = new PollOption();
-            $copy->setText($option->getText()->copy());
+            $copy->text = $option->text->copy();
             $revision->addOption($copy);
         }
     }

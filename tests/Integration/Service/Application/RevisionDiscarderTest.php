@@ -83,8 +83,8 @@ final class RevisionDiscarderTest extends DatabaseTestCase
         $comment = $this->commentOn($draft);
         $this->entityManager->flush();
 
-        $draftId = (int) $draft->getId();
-        $commentId = (int) $comment->getId();
+        $draftId = (int) $draft->id;
+        $commentId = (int) $comment->id;
         $revisionClass = $draft::class;
         $commentClass = $draft->getCommentClass();
 
@@ -183,8 +183,8 @@ final class RevisionDiscarderTest extends DatabaseTestCase
         $class = $revision->getCommentClass();
         $comment = new $class();
         $comment->attachTo($revision);
-        $comment->setAuthor($user);
-        $comment->setBody('Please reconsider this.');
+        $comment->author = $user;
+        $comment->body = 'Please reconsider this.';
         $this->entityManager->persist($comment);
 
         return $comment;

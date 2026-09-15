@@ -99,7 +99,7 @@ final readonly class CompanyBannerService
             $replaced,
         );
 
-        $id = $package->getId();
+        $id = $package->id;
         if (null !== $id) {
             $this->messageBus->dispatch(new PublishDomainNotificationMessage(
                 NotificationType::CompanyBannerAwaitingReview,
@@ -116,9 +116,9 @@ final readonly class CompanyBannerService
         UploadedFile $file,
     ): ?string {
         return $this->imageUploadService->uploadBanner(
-            $package->getCompany(),
+            $package->company,
             $file,
-            $package->getFormat(),
+            $package->format,
         );
     }
 
@@ -129,7 +129,7 @@ final readonly class CompanyBannerService
         ?string $replaced,
     ): void {
         $this->auditLogger->log(
-            $package->getCompany(),
+            $package->company,
             $actor,
             $verb,
         );

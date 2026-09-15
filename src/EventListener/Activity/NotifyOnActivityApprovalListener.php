@@ -36,12 +36,12 @@ final readonly class NotifyOnActivityApprovalListener
             return;
         }
 
-        $activity = $revision->getActivity();
+        $activity = $revision->activity;
         if (null !== $activity->getLiveRevision()) {
             return;
         }
 
-        $id = $activity->getId();
+        $id = $activity->id;
         if (null === $id) {
             return;
         }

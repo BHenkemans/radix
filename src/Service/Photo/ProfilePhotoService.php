@@ -41,8 +41,8 @@ final readonly class ProfilePhotoService
     ): bool {
         if (
             null === $this->memberTagRepository->findTag(
-                (int) $photo->getId(),
-                $member->getLidnr(),
+                (int) $photo->id,
+                $member->lidnr,
             )
             || null !== $this->hiddenPhotoRepository->findByMemberAndPhoto(
                 $member,
@@ -55,10 +55,10 @@ final readonly class ProfilePhotoService
         $this->removeProfilePhoto($member);
 
         $profilePhoto = new ProfilePhoto();
-        $profilePhoto->setPhoto($photo);
-        $profilePhoto->setMember($member);
-        $profilePhoto->setDateTime(new DateTime()->add(new DateInterval('P1Y')));
-        $profilePhoto->setExplicit(true);
+        $profilePhoto->photo = $photo;
+        $profilePhoto->member = $member;
+        $profilePhoto->dateTime = new DateTime()->add(new DateInterval('P1Y'));
+        $profilePhoto->explicit = true;
 
         $this->entityManager->persist($profilePhoto);
         $this->entityManager->flush();
@@ -68,7 +68,7 @@ final readonly class ProfilePhotoService
 
     public function removeProfilePhoto(Member $member): void
     {
-        $existing = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->getLidnr());
+        $existing = $this->profilePhotoRepository->getProfilePhotoByLidnr($member->lidnr);
         if (null === $existing) {
             return;
         }

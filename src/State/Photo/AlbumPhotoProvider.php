@@ -91,11 +91,11 @@ final readonly class AlbumPhotoProvider implements ProviderInterface
     private function resource(Photo $photo): PhotoResource
     {
         return new PhotoResource(
-            id: (int) $photo->getId(),
-            dateTime: $photo->getDateTime()->format(DateTimeInterface::ATOM),
-            artist: $photo->getArtist(),
-            camera: $photo->getCamera(),
-            aspectRatio: $photo->getAspectRatio(),
+            id: (int) $photo->id,
+            dateTime: $photo->dateTime->format(DateTimeInterface::ATOM),
+            artist: $photo->artist,
+            camera: $photo->camera,
+            aspectRatio: $photo->aspectRatio,
             url: $this->urlBuilder->photoUrl(
                 $photo,
                 self::URL_VARIANT,
@@ -151,21 +151,21 @@ final readonly class AlbumPhotoProvider implements ProviderInterface
             // Naming a deleted member is what `members_deleted` gates everywhere else the API names one.
             if (
                 !$includeDeleted
-                && $tag->getMember()->getDeleted()
+                && $tag->member->deleted
             ) {
                 return null;
             }
 
             return [
-                'lidnr' => $tag->getMember()->getLidnr(),
-                'full_name' => $tag->getMember()->getFullName(),
+                'lidnr' => $tag->member->lidnr,
+                'full_name' => $tag->member->getFullName(),
             ];
         }
 
         if ($tag instanceof OrganTag) {
             return [
-                'organId' => (int) $tag->getOrgan()->getId(),
-                'abbreviation' => $tag->getOrgan()->getAbbr(),
+                'organId' => (int) $tag->organ->id,
+                'abbreviation' => $tag->organ->abbr,
             ];
         }
 

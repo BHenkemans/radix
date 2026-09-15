@@ -30,7 +30,7 @@ final class TagStiTest extends DatabaseTestCase
     {
         $photo = $this->dinnerPhoto();
 
-        $tags = $this->tagRepository()->findBy(['photo' => $photo->getId()]);
+        $tags = $this->tagRepository()->findBy(['photo' => $photo->id]);
         $members = array_filter(
             $tags,
             static fn (Tag $tag): bool => $tag instanceof MemberTag,
@@ -65,12 +65,12 @@ final class TagStiTest extends DatabaseTestCase
         self::assertTrue($tag->hasPosition());
         self::assertEqualsWithDelta(
             0.52,
-            $tag->getPositionX(),
+            $tag->positionX,
             0.0001,
         );
         self::assertEqualsWithDelta(
             0.41,
-            $tag->getPositionY(),
+            $tag->positionY,
             0.0001,
         );
     }
@@ -86,7 +86,7 @@ final class TagStiTest extends DatabaseTestCase
             'Tag',
             [
                 'dtype' => 'member',
-                'photo_id' => $photo->getId(),
+                'photo_id' => $photo->id,
                 'member_id' => 8030,
             ],
         );
@@ -108,8 +108,8 @@ final class TagStiTest extends DatabaseTestCase
             'Tag',
             [
                 'dtype' => 'organ',
-                'photo_id' => $photo->getId(),
-                'organ_id' => $organ->getId(),
+                'photo_id' => $photo->id,
+                'organ_id' => $organ->id,
             ],
         );
     }
@@ -120,8 +120,8 @@ final class TagStiTest extends DatabaseTestCase
 
         // Both a member tag and an organ tag already reference the dinner photo in the seed, proving the two unique
         // indexes coexist (each other's discriminating column is NULL, which MariaDB treats as distinct).
-        $organTags = $this->entityManager->getRepository(OrganTag::class)->findBy(['photo' => $photo->getId()]);
-        $memberTags = $this->entityManager->getRepository(MemberTag::class)->findBy(['photo' => $photo->getId()]);
+        $organTags = $this->entityManager->getRepository(OrganTag::class)->findBy(['photo' => $photo->id]);
+        $memberTags = $this->entityManager->getRepository(MemberTag::class)->findBy(['photo' => $photo->id]);
 
         self::assertNotEmpty($organTags);
         self::assertNotEmpty($memberTags);
@@ -154,7 +154,7 @@ final class TagStiTest extends DatabaseTestCase
             'The in-subtree graduate is expected to be tagged in the seed.',
         );
 
-        return $tags[0]->getPhoto();
+        return $tags[0]->photo;
     }
 
     private function tagRepository(): TagRepository

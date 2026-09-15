@@ -196,7 +196,7 @@ final class PollComments
             return new RedirectResponse(
                 $this->urlGenerator->generate(
                     'poll/view',
-                    ['poll' => $this->poll->getId()],
+                    ['poll' => $this->poll->id],
                 ),
             );
         } catch (RuntimeException) {
@@ -273,7 +273,7 @@ final class PollComments
     private function find(int $comment): PollComment
     {
         foreach ($this->poll->getComments() as $candidate) {
-            if ($candidate->getId() !== $comment) {
+            if ($candidate->id !== $comment) {
                 continue;
             }
 
@@ -288,6 +288,6 @@ final class PollComments
         $user = $this->security->getUser();
         assert($user instanceof User);
 
-        return $user->getMember();
+        return $user->member;
     }
 }

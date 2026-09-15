@@ -80,13 +80,13 @@ class PhotoInteractionController extends AbstractController
         $memberTags = [];
         $taggedSelf = false;
         foreach ($this->memberTagRepository->findByPhotoWithMember($photo) as $tag) {
-            $taggedSelf = $taggedSelf || $tag->getMember()->getLidnr() === $member->getLidnr();
+            $taggedSelf = $taggedSelf || $tag->member->lidnr === $member->lidnr;
             $memberTags[] = [
-                'id' => $tag->getId(),
-                'lidnr' => $tag->getMember()->getLidnr(),
-                'fullName' => $tag->getMember()->getFullName(),
-                'x' => $tag->getPositionX(),
-                'y' => $tag->getPositionY(),
+                'id' => $tag->id,
+                'lidnr' => $tag->member->lidnr,
+                'fullName' => $tag->member->getFullName(),
+                'x' => $tag->positionX,
+                'y' => $tag->positionY,
                 'canRemove' => $this->isGranted(
                     TagVoter::REMOVE,
                     $tag,
@@ -97,12 +97,12 @@ class PhotoInteractionController extends AbstractController
         $organTags = [];
         foreach ($this->organTagRepository->findByPhotoWithOrgan($photo) as $tag) {
             $organTags[] = [
-                'id' => $tag->getId(),
-                'organId' => $tag->getOrgan()->getId(),
-                'name' => $tag->getOrgan()->getName(),
-                'abbr' => $tag->getOrgan()->getAbbr(),
-                'x' => $tag->getPositionX(),
-                'y' => $tag->getPositionY(),
+                'id' => $tag->id,
+                'organId' => $tag->organ->id,
+                'name' => $tag->organ->name,
+                'abbr' => $tag->organ->abbr,
+                'x' => $tag->positionX,
+                'y' => $tag->positionY,
                 'canRemove' => $this->isGranted(
                     TagVoter::REMOVE,
                     $tag,
@@ -123,13 +123,13 @@ class PhotoInteractionController extends AbstractController
             ),
             'voted' => null !== $this->voteRepository->findVote(
                 $photo,
-                $member->getLidnr(),
+                $member->lidnr,
             ),
             // The pulsing-dot nudge shows only when the member has not voted recently.
-            'recentVote' => $this->voteRepository->hasRecentVote($member->getLidnr()),
+            'recentVote' => $this->voteRepository->hasRecentVote($member->lidnr),
             'taggedSelf' => $taggedSelf,
             // The week this photo was photo of the week, if ever, so the viewer can badge it.
-            'photoOfTheWeek' => $photoEntity->getWeeklyPhoto()?->getWeek()->format('Y-m-d'),
+            'photoOfTheWeek' => $photoEntity->weeklyPhoto?->week->format('Y-m-d'),
             // The camera metadata for the viewer's info panel.
             'exif' => $photoEntity->toExifArray(),
         ]);
@@ -194,7 +194,7 @@ class PhotoInteractionController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'id' => $tag->getId(),
+            'id' => $tag->id,
         ]);
     }
 
@@ -299,9 +299,9 @@ class PhotoInteractionController extends AbstractController
     {
         return new JsonResponse(array_map(
             static fn (Organ $organ): array => [
-                'id' => $organ->getId(),
-                'abbr' => $organ->getAbbr(),
-                'name' => $organ->getName(),
+                'id' => $organ->id,
+                'abbr' => $organ->abbr,
+                'name' => $organ->name,
             ],
             $this->organRepository->findActive(),
         ));
@@ -341,6 +341,6 @@ class PhotoInteractionController extends AbstractController
         $user = $this->getUser();
         assert($user instanceof User);
 
-        return $user->getMember();
+        return $user->member;
     }
 }

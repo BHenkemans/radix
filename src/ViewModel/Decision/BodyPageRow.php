@@ -34,7 +34,7 @@ final readonly class BodyPageRow
 
     public static function fromOrgan(Organ $organ): self
     {
-        $page = $organ->getOrganInformation();
+        $page = $organ->organInformation;
         $current = $page?->getCurrentRevision();
         $previous = $current?->getPreviousRevision();
 
@@ -43,7 +43,7 @@ final readonly class BodyPageRow
             page: $page,
             status: $current?->getStatus(),
             revisionNumber: $current?->getRevisionNumber(),
-            currentRevisionId: $current?->getId(),
+            currentRevisionId: $current?->id,
             published: true === $page?->isPublished(),
             liveRevisionNumber: $current?->getLiveCounterpart()?->getRevisionNumber(),
             changesRequested: RevisionStatus::Draft === $current?->getStatus()

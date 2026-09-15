@@ -92,10 +92,10 @@ class AdminController extends AbstractController
         User $user,
     ): Response {
         $company = new Company();
-        $company->setPublished(false);
+        $company->published = false;
 
         $revision = new CompanyRevision();
-        $revision->setAuthor($user->getMember());
+        $revision->setAuthor($user->member);
         $company->addRevision($revision);
         $company->setCurrentRevision($revision);
 
@@ -256,8 +256,8 @@ class AdminController extends AbstractController
                 'admin' => true,
                 'flow_key' => $run,
                 'finish_label' => $this->translator->trans('Save changes'),
-                'has_square_logo' => null !== $current->getSquareLogo(),
-                'has_banner_logo' => null !== $current->getBannerLogo(),
+                'has_square_logo' => null !== $current->squareLogo,
+                'has_banner_logo' => null !== $current->bannerLogo,
             ],
         );
         $flow->handleRequest($request);
@@ -309,7 +309,7 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"career_company_edit_lock-" ~ args["company"].getId()'),
+        id: new Expression('"career_company_edit_lock-" ~ args["company"].id'),
         tokenKey: '_csrf_token',
     )]
     public function editPing(
@@ -330,7 +330,7 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"career_company_edit_lock-" ~ args["company"].getId()'),
+        id: new Expression('"career_company_edit_lock-" ~ args["company"].id'),
         tokenKey: '_csrf_token',
     )]
     public function editRelease(
@@ -354,7 +354,7 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"company_revise-" ~ args["company"].getId()'),
+        id: new Expression('"company_revise-" ~ args["company"].id'),
         tokenKey: '_csrf_token',
     )]
     public function revise(
@@ -403,7 +403,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/career/companies/edit',
-            ['company' => $company->getId()],
+            ['company' => $company->id],
         );
     }
 
@@ -411,7 +411,7 @@ class AdminController extends AbstractController
     {
         return $this->redirectToRoute(
             'admin/career/companies/view',
-            ['company' => $company->getId()],
+            ['company' => $company->id],
         );
     }
 

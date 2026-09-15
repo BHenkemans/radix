@@ -113,7 +113,7 @@ final class UsersOverview extends AbstractDoctrinePaginatedOverview
         // Hydrate the matching `User` per row in one extra query. Doctrine's LEFT JOIN above does not produce a
         // straightforward `Member -> ?User` mapping for unmanaged entities, so we look the users up explicitly.
         $lidnrs = array_map(
-            static fn (Member $m): int => $m->getLidnr(),
+            static fn (Member $m): int => $m->lidnr,
             $members,
         );
 
@@ -124,13 +124,13 @@ final class UsersOverview extends AbstractDoctrinePaginatedOverview
         /** @var array<int, User> $usersByLidnr */
         $usersByLidnr = [];
         foreach ($users as $user) {
-            $usersByLidnr[$user->getLidnr()] = $user;
+            $usersByLidnr[$user->lidnr] = $user;
         }
 
         return array_map(
             static fn (Member $m): MemberRow => MemberRow::fromMember(
                 $m,
-                $usersByLidnr[$m->getLidnr()] ?? null,
+                $usersByLidnr[$m->lidnr] ?? null,
             ),
             $members,
         );

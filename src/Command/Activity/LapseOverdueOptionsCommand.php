@@ -117,9 +117,9 @@ final class LapseOverdueOptionsCommand extends Command
         foreach ($proposals as $proposal) {
             $ui->text(sprintf(
                 '%s (%s) on %s',
-                $proposal->getName(),
-                $proposal->getOrgan()?->getAbbr() ?? 'the board',
-                $proposal->getChosenOption()?->getBeginsAt()->format('Y-m-d') ?? '?',
+                $proposal->name,
+                $proposal->organ->abbr ?? 'the board',
+                $proposal->chosenOption?->beginsAt->format('Y-m-d') ?? '?',
             ));
 
             if ($dryRun) {
@@ -136,7 +136,7 @@ final class LapseOverdueOptionsCommand extends Command
             ) {
                 $this->logger->warning(
                     'A reserved day could not be released.',
-                    ['proposal' => $proposal->getId()],
+                    ['proposal' => $proposal->id],
                 );
 
                 continue;
@@ -192,7 +192,7 @@ final class LapseOverdueOptionsCommand extends Command
 
     private function tell(ActivityProposal $proposal): void
     {
-        $proposalId = $proposal->getId();
+        $proposalId = $proposal->id;
 
         if (null === $proposalId) {
             return;
@@ -201,7 +201,7 @@ final class LapseOverdueOptionsCommand extends Command
         $creator = $proposal->getCreatedBy();
         $user = null === $creator
             ? null
-            : $this->userRepository->find($creator->getLidnr());
+            : $this->userRepository->find($creator->lidnr);
 
         if (null === $user) {
             return;
@@ -212,7 +212,7 @@ final class LapseOverdueOptionsCommand extends Command
             NotificationType::ActivityProposalLapsed,
             [
                 'proposal' => strval($proposalId),
-                'proposalName' => $proposal->getName(),
+                'proposalName' => $proposal->name,
             ],
             AlertTypes::Warning,
         );

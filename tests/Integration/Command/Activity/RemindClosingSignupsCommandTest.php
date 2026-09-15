@@ -46,7 +46,7 @@ final class RemindClosingSignupsCommandTest extends DatabaseTestCase
             $subscribers,
             $this->reminders(),
         );
-        self::assertNotNull($list->getRemindedAt());
+        self::assertNotNull($list->remindedAt);
     }
 
     public function testRunningAgainSaysNothingFurther(): void
@@ -89,7 +89,7 @@ final class RemindClosingSignupsCommandTest extends DatabaseTestCase
 
         self::assertSame(
             $expected,
-            $this->reminders()[0]->getType(),
+            $this->reminders()[0]->type,
         );
     }
 
@@ -142,9 +142,9 @@ final class RemindClosingSignupsCommandTest extends DatabaseTestCase
             'The seed is expected to contain a live sign-up list with subscribers.',
         );
 
-        $list->setOpenDate(new DateTime('-1 week'));
-        $list->setCloseDate(new DateTime($offset));
-        $list->setRemindedAt(null);
+        $list->openDate = new DateTime('-1 week');
+        $list->closeDate = new DateTime($offset);
+        $list->remindedAt = null;
         $this->entityManager->flush();
 
         return $list;

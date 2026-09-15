@@ -58,7 +58,7 @@ final class AdminApprovalControllerTest extends DatabaseTestCase
         );
         $this->entityManager->persist($draft);
         $this->entityManager->flush();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->editLockService()->acquire(
             $activity,
             $this->user(8025),
@@ -85,7 +85,7 @@ final class AdminApprovalControllerTest extends DatabaseTestCase
         self::assertNull(
             $this->editLocks()->findOneByResource(
                 $activity->getResourceId(),
-                (int) $activity->getId(),
+                (int) $activity->id,
             ),
         );
     }
@@ -95,7 +95,7 @@ final class AdminApprovalControllerTest extends DatabaseTestCase
         // A brand-new (never-approved) draft has nothing to revert to; discarding it would delete the whole activity,
         // which is deliberately left to the stale-revision cleanup. The controller refuses and keeps the draft.
         $draft = $this->aNeverApprovedDraft();
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
 
         $this->authenticate(['ROLE_BOARD']);
         $session = $this->pushRequestWithSession();
@@ -146,23 +146,23 @@ final class AdminApprovalControllerTest extends DatabaseTestCase
 
         $draft->setLastEditedBy($this->user(8025));
         $list = new SignupList();
-        $list->setName(new ActivityLocalisedText(
+        $list->name = new ActivityLocalisedText(
             'Deelnemers',
             'Participants',
-        ));
-        $list->setOpenDate(new DateTime('2030-01-01 12:00'));
-        $list->setCloseDate(new DateTime('2030-02-01 12:00'));
+        );
+        $list->openDate = new DateTime('2030-01-01 12:00');
+        $list->closeDate = new DateTime('2030-02-01 12:00');
         $draft->addSignupList($list);
 
         $edit = new ActivityRevisionEdit();
-        $edit->setRevision($draft);
+        $edit->revision = $draft;
         $edit->setEditor($this->user(8025));
-        $edit->setEditedAt(new DateTime());
-        $edit->setChangedFields(['name']);
+        $edit->editedAt = new DateTime();
+        $edit->changedFields = ['name'];
         $this->entityManager->persist($edit);
         $this->entityManager->flush();
 
-        $draftId = (int) $draft->getId();
+        $draftId = (int) $draft->id;
         $this->entityManager->clear();
         $draft = $this->entityManager->getRepository(ActivityRevision::class)->find($draftId);
         self::assertInstanceOf(
@@ -200,7 +200,7 @@ final class AdminApprovalControllerTest extends DatabaseTestCase
     {
         $draft = $this->aNeverApprovedDraft();
         $list = new SignupList();
-        $list->setName(new ActivityLocalisedText());
+        $list->name = new ActivityLocalisedText();
         $draft->addSignupList($list);
 
         $this->authenticateAsBoardWithSudo();

@@ -123,7 +123,7 @@ class UserController extends AbstractSecurityController
             $externalApp,
         );
         if (null !== $lastAuthentication) {
-            if (new DateTimeImmutable()->diff($lastAuthentication->getTime())->days <= 90) {
+            if (new DateTimeImmutable()->diff($lastAuthentication->time)->days <= 90) {
                 return $this->renderTokenRedirect(
                     $externalApp,
                     $this->externalAppService->callbackWithToken(
@@ -156,7 +156,7 @@ class UserController extends AbstractSecurityController
 
             // A declining member is sent back to the application without a token.
             $url = $declined
-                ? $externalApp->getUrl()
+                ? $externalApp->url
                 : $this->externalAppService->callbackWithToken(
                     $externalApp,
                     $user,
@@ -191,7 +191,7 @@ class UserController extends AbstractSecurityController
         return $this->render(
             'user/token-redirect.html.twig',
             [
-                'appId' => $externalApp->getAppId(),
+                'appId' => $externalApp->appId,
                 'url' => $url,
             ],
         );
@@ -233,18 +233,18 @@ class UserController extends AbstractSecurityController
     protected function resolvePasswordResetTarget(
         PasswordReset $passwordReset,
     ): User|CompanyUser|null {
-        $member = $passwordReset->getMember();
+        $member = $passwordReset->member;
         if (null === $member) {
             return null;
         }
 
         // Instantiate a User on first activation (the Member is projected from the ledger, no User row yet). The new
         // row is only persisted by the abstract base after a successful, validated password submission.
-        $user = $this->userRepository->find($member->getLidnr());
+        $user = $this->userRepository->find($member->lidnr);
         if (null === $user) {
             $user = new User();
-            $user->setLidnr($member->getLidnr());
-            $user->setMember($member);
+            $user->lidnr = $member->lidnr;
+            $user->member = $member;
         }
 
         return $user;

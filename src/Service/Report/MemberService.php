@@ -66,28 +66,28 @@ class MemberService
     public function generateMember(DatabaseMember $member): void
     {
         $repo = $this->emReport->getRepository(ReportMember::class);
-        $reportMember = $repo->find($member->getLidnr());
+        $reportMember = $repo->find($member->lidnr);
 
         if (null === $reportMember) {
             $reportMember = new ReportMember();
         }
 
-        $reportMember->setLidnr($member->getLidnr());
-        $reportMember->setEmail($member->getEmail());
-        $reportMember->setLastName($member->getLastName());
-        $reportMember->setMiddleName($member->getMiddleName());
-        $reportMember->setInitials($member->getInitials());
-        $reportMember->setFirstName($member->getFirstName());
-        $reportMember->setGeneration($member->getGeneration());
-        $reportMember->setType($member->getCurrentOrLastMembership()?->getType() ?? MembershipTypes::Graduate);
-        $reportMember->setStudy($member->getStudy());
-        $reportMember->setMembershipEndsOn($member->getMembershipEndsOn());
-        $reportMember->setExpiration($member->getExpiration());
-        $reportMember->setBirth($member->getBirth());
-        $reportMember->setChangedOn($member->getChangedOn());
-        $reportMember->setSupremum($member->getSupremum());
-        $reportMember->setHidden($member->getHidden());
-        $reportMember->setDeleted($member->getDeleted());
+        $reportMember->lidnr = $member->lidnr;
+        $reportMember->email = $member->email;
+        $reportMember->lastName = $member->lastName;
+        $reportMember->middleName = $member->middleName;
+        $reportMember->initials = $member->initials;
+        $reportMember->firstName = $member->firstName;
+        $reportMember->generation = $member->getGeneration();
+        $reportMember->type = $member->getCurrentOrLastMembership()->type ?? MembershipTypes::Graduate;
+        $reportMember->study = $member->study;
+        $reportMember->membershipEndsOn = $member->getMembershipEndsOn();
+        $reportMember->expiration = $member->getExpiration();
+        $reportMember->birth = $member->birth;
+        $reportMember->changedOn = $member->changedOn;
+        $reportMember->supremum = $member->supremum;
+        $reportMember->hidden = $member->hidden;
+        $reportMember->deleted = $member->deleted;
 
         foreach ($member->getAddresses() as $address) {
             $this->generateAddress(
@@ -111,18 +111,19 @@ class MemberService
 
         $reportLists = array_map(
             static function ($list) {
-                return $list->getMailingList()->getName();
+                return $list->mailingList->name;
             },
             $reportMember->getMailingListMemberships()->toArray(),
         );
+        $email = $reportMember->email;
         $lists = array_map(
             static function ($list) {
-                return $list->getMailingList()->getName();
+                return $list->mailingList->name;
             },
             array_filter(
                 $member->getMailingListMemberships()->toArray(),
-                static function (DatabaseMailingListMember $list) use ($reportMember) {
-                    return !$list->isToBeDeleted() && $list->getEmail() === $reportMember->getEmail();
+                static function (DatabaseMailingListMember $list) use ($email) {
+                    return !$list->toBeDeleted && $list->email === $email;
                 },
             ),
         );
@@ -139,9 +140,15 @@ class MemberService
                 throw new LogicException('mailing list missing from the projection');
             }
 
+            // A membership only reaches here when the address it was entered with equals the member's own, and a
+            // membership always carries one, so the member has one too.
+            if (null === $email) {
+                throw new LogicException('mailing list membership without an e-mail address');
+            }
+
             $reportMailingListMember = new ReportMailingListMember();
-            $reportMailingListMember->setMailingList($reportList);
-            $reportMailingListMember->setEmail($reportMember->getEmail());
+            $reportMailingListMember->mailingList = $reportList;
+            $reportMailingListMember->email = $email;
 
             $reportMember->addList($reportMailingListMember);
             $this->emReport->persist($reportList);
@@ -162,7 +169,7 @@ class MemberService
             foreach ($reportMember->getMailingListMemberships() as $repMLM) {
                 // NOTE: $list is a mailing list name while getMailingList() is a MailingList, so this never matches
                 // and a membership that disappeared from the ledger is never removed from the projection. Left
-                if ($repMLM->getMailingList() !== $list) {
+                if ($repMLM->mailingList !== $list) {
                     continue;
                 }
 
@@ -179,28 +186,28 @@ class MemberService
 
         if (null === $reportMember) {
             $reportMember = $this->emReport->getRepository(ReportMember::class)
-                ->find($address->getMember()->getLidnr());
+                ->find($address->getMember()->lidnr);
             if (null === $reportMember) {
                 throw new LogicException('Address without member');
             }
         }
 
         $reportAddress = $addrRepo->find([
-            'member' => $reportMember->getLidnr(),
-            'type' => $address->getType(),
+            'member' => $reportMember->lidnr,
+            'type' => $address->type,
         ]);
 
         if (null === $reportAddress) {
             $reportAddress = new ReportAddress();
         }
 
-        $reportAddress->setType($address->getType());
-        $reportAddress->setCountry($address->getCountry());
-        $reportAddress->setStreet($address->getStreet());
-        $reportAddress->setNumber($address->getNumber());
-        $reportAddress->setPostalCode($address->getPostalCode());
-        $reportAddress->setCity($address->getCity());
-        $reportAddress->setPhone($address->getPhone());
+        $reportAddress->type = $address->type;
+        $reportAddress->country = $address->country;
+        $reportAddress->street = $address->street;
+        $reportAddress->number = $address->number;
+        $reportAddress->postalCode = $address->postalCode;
+        $reportAddress->city = $address->city;
+        $reportAddress->phone = $address->phone;
         $reportMember->addAddress($reportAddress);
         $this->emReport->persist($reportAddress);
     }
@@ -220,7 +227,7 @@ class MemberService
     public function deleteMember(DatabaseMember $member): void
     {
         $reportMember = $this->emReport->getRepository(ReportMember::class)
-            ->find($member->getLidnr());
+            ->find($member->lidnr);
 
         if (null === $reportMember) {
             return;
@@ -234,8 +241,8 @@ class MemberService
         $repo = $this->emReport->getRepository(ReportAddress::class);
 
         $reportAddress = $repo->find([
-            'member' => $address->getMember()->getLidnr(),
-            'type' => $address->getType(),
+            'member' => $address->getMember()->lidnr,
+            'type' => $address->type,
         ]);
 
         if (null === $reportAddress) {

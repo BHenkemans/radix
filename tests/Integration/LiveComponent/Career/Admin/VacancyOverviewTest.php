@@ -92,12 +92,12 @@ final class VacancyOverviewTest extends DatabaseTestCase
     public function testPickingACompanyNarrowsTheList(): void
     {
         $component = $this->overview(pageSize: 100);
-        $component->companyFilter = strval($this->company('nexunt')->getId());
+        $component->companyFilter = strval($this->company('nexunt')->id);
 
         foreach ($component->getVacancies() as $vacancy) {
             self::assertSame(
                 'Nexunt Systems',
-                $vacancy->getCompany()->getName(),
+                $vacancy->getCompany()->name,
             );
         }
     }
@@ -109,13 +109,13 @@ final class VacancyOverviewTest extends DatabaseTestCase
     {
         $component = $this->overview(pageSize: 100);
         $component->company = $this->company('nexunt');
-        $component->companyFilter = strval($this->company('orbit-analytics')->getId());
+        $component->companyFilter = strval($this->company('orbit-analytics')->id);
 
         self::assertTrue($component->isPinnedToACompany());
         foreach ($component->getVacancies() as $vacancy) {
             self::assertSame(
                 'Nexunt Systems',
-                $vacancy->getCompany()->getName(),
+                $vacancy->getCompany()->name,
             );
         }
     }
@@ -126,7 +126,7 @@ final class VacancyOverviewTest extends DatabaseTestCase
     private function titles(VacancyOverview $component): array
     {
         return array_map(
-            static fn (Vacancy $vacancy): string => strval($vacancy->getCurrentRevision()?->getName()->getValueEN()),
+            static fn (Vacancy $vacancy): string => strval($vacancy->getCurrentRevision()?->name->getValueEN()),
             $component->getVacancies(),
         );
     }

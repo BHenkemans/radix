@@ -64,17 +64,17 @@ final class SecurityNotificationHandlerTest extends TestCase
         $notification = $this->published[0];
         self::assertSame(
             NotificationType::SignIn,
-            $notification->getType(),
+            $notification->type,
         );
         self::assertSame(
             AlertTypes::Warning,
-            $notification->getLevel(),
+            $notification->level,
         );
-        self::assertNotNull($notification->getRecipientUser());
-        self::assertNull($notification->getRecipientCompanyUser());
+        self::assertNotNull($notification->recipientUser);
+        self::assertNull($notification->recipientCompanyUser);
         self::assertSame(
             self::ORIGIN,
-            $notification->getContext(),
+            $notification->context,
         );
     }
 
@@ -328,11 +328,11 @@ final class SecurityNotificationHandlerTest extends TestCase
     private function users(): UserRepository
     {
         $member = self::createStub(Member::class);
-        $member->method('getEmail')->willReturn('ada@example.com');
+        $member->email = 'ada@example.com';
         $member->method('getFullName')->willReturn('Ada Lovelace');
 
         $user = self::createStub(User::class);
-        $user->method('getMember')->willReturn($member);
+        $user->member = $member;
 
         $users = self::createStub(UserRepository::class);
         $users->method('find')->willReturnCallback(
@@ -345,9 +345,9 @@ final class SecurityNotificationHandlerTest extends TestCase
     private function companyUsers(): CompanyUserRepository
     {
         $companyUser = self::createStub(CompanyUser::class);
-        $companyUser->method('getCompany')->willReturn(self::createStub(Company::class));
-        $companyUser->method('getEmail')->willReturn('rep@example.com');
-        $companyUser->method('getName')->willReturn('Grace Hopper');
+        $companyUser->company = self::createStub(Company::class);
+        $companyUser->email = 'rep@example.com';
+        $companyUser->name = 'Grace Hopper';
 
         $companyUsers = self::createStub(CompanyUserRepository::class);
         $companyUsers->method('loadUserByIdentifier')->willReturnCallback(

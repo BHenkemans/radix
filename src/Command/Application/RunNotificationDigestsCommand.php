@@ -99,7 +99,7 @@ final class RunNotificationDigestsCommand extends Command
         $digests = 0;
 
         foreach ($this->pendingRepository->findUsersWithPending() as $user) {
-            if ($this->settingsRepository->getOrCreateForUser($user)->getNotificationsPaused()) {
+            if ($this->settingsRepository->getOrCreateForUser($user)->notificationsPaused) {
                 $this->pendingRepository->deleteForUser($user);
 
                 continue;
@@ -108,15 +108,15 @@ final class RunNotificationDigestsCommand extends Command
             $dueSubscriptions = [];
             foreach ($this->subscriptionRepository->findForUser($user) as $subscription) {
                 if (
-                    !$subscription->getFrequency()->isDue(
-                        $subscription->getLastSentAt(),
+                    !$subscription->frequency->isDue(
+                        $subscription->lastSentAt,
                         $now,
                     )
                 ) {
                     continue;
                 }
 
-                $dueSubscriptions[$subscription->getCategory()->value] = $subscription;
+                $dueSubscriptions[$subscription->category->value] = $subscription;
             }
 
             if ([] === $dueSubscriptions) {
@@ -126,14 +126,14 @@ final class RunNotificationDigestsCommand extends Command
             $entries = [];
             $sentCategories = [];
             foreach ($this->pendingRepository->findForUser($user) as $queued) {
-                $notification = $queued->getNotification();
-                $category = $notification->getType()->value;
+                $notification = $queued->notification;
+                $category = $notification->type->value;
                 if (!isset($dueSubscriptions[$category])) {
                     continue;
                 }
 
-                $type = $notification->getType();
-                $subjectId = $notification->getSubjectId();
+                $type = $notification->type;
+                $subjectId = $notification->subjectId;
                 $name = null === $subjectId
                     ? null
                     : $this->subjectResolver->nameFor(
@@ -162,13 +162,13 @@ final class RunNotificationDigestsCommand extends Command
                 $this->entityManager->remove($queued);
             }
 
-            $member = $user->getMember();
-            $email = $member->getEmail();
+            $member = $user->member;
+            $email = $member->email;
             if (
                 [] !== $entries
                 && null !== $email
-                && !$member->getDeleted()
-                && !$member->getHidden()
+                && !$member->deleted
+                && !$member->hidden
                 && !$member->isExpired()
             ) {
                 $this->messageBus->dispatch(new SendNotificationDigestMessage(
@@ -184,7 +184,7 @@ final class RunNotificationDigestsCommand extends Command
                     continue;
                 }
 
-                $subscription->setLastSentAt($now);
+                $subscription->lastSentAt = $now;
             }
         }
 

@@ -103,7 +103,7 @@ final class AlbumServiceTest extends DatabaseTestCase
             'The seed is expected to contain an unpublished album.',
         );
 
-        self::assertNull($this->service()->findViewableAlbum((int) $draft->getId()));
+        self::assertNull($this->service()->findViewableAlbum((int) $draft->id));
     }
 
     public function testBoardCannotFindAnUnpublishedAlbumThroughBrowsing(): void
@@ -120,7 +120,7 @@ final class AlbumServiceTest extends DatabaseTestCase
         );
 
         // The public album page 404s on a draft even for the board; it is reached via the admin section instead.
-        self::assertNull($this->service()->findViewableAlbum((int) $draft->getId()));
+        self::assertNull($this->service()->findViewableAlbum((int) $draft->id));
     }
 
     public function testSearchNarrowsTheAlbumsToNameMatches(): void
@@ -134,7 +134,7 @@ final class AlbumServiceTest extends DatabaseTestCase
             Album::class,
             $gala,
         );
-        $start = $gala->getStartDateTime();
+        $start = $gala->startDateTime;
         self::assertInstanceOf(
             DateTime::class,
             $start,
@@ -145,7 +145,7 @@ final class AlbumServiceTest extends DatabaseTestCase
             'Trip',
         );
         $names = array_map(
-            static fn (Album $album): string => $album->getName(),
+            static fn (Album $album): string => $album->name,
             array_merge(...array_values($byMonth)),
         );
 
@@ -188,7 +188,7 @@ final class AlbumServiceTest extends DatabaseTestCase
         );
 
         // Gala has two published sub-albums (Dinner, Afterparty) and one draft.
-        $galaId = intval($gala->getId());
+        $galaId = intval($gala->id);
         self::assertSame(
             2,
             $this->service()->getCardCounts(
@@ -224,7 +224,7 @@ final class AlbumServiceTest extends DatabaseTestCase
             $album,
             'The seed is expected to contain the album.',
         );
-        $start = $album->getStartDateTime();
+        $start = $album->startDateTime;
         self::assertInstanceOf(
             DateTime::class,
             $start,
@@ -233,7 +233,7 @@ final class AlbumServiceTest extends DatabaseTestCase
         $byMonth = $this->service()->getViewableRootAlbumsByMonth(AssociationYear::fromDate($start)->getYear());
 
         return array_map(
-            static fn (Album $album): string => $album->getName(),
+            static fn (Album $album): string => $album->name,
             array_merge(...array_values($byMonth)),
         );
     }

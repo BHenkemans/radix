@@ -111,7 +111,7 @@ class AdminActivityCalendarController extends AbstractController
         User $user,
     ): Response {
         $proposal = new ActivityProposal();
-        $proposal->setCreatedBy($user->getMember());
+        $proposal->setCreatedBy($user->member);
         $proposal->addDateOption(new ActivityDateOption());
 
         $form = $this->createForm(
@@ -150,7 +150,7 @@ class AdminActivityCalendarController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/activities/calendar/proposal',
-            ['proposal' => $proposal->getId()],
+            ['proposal' => $proposal->id],
         );
     }
 
@@ -175,11 +175,11 @@ class AdminActivityCalendarController extends AbstractController
                     $proposal,
                     'withdraw',
                 ),
-                'allowance' => null === $proposal->getOrgan()
+                'allowance' => null === $proposal->organ
                     ? null
                     : $this->limitResolver->allowanceFor(
-                        $proposal->getOrgan(),
-                        $proposal->getPeriod(),
+                        $proposal->organ,
+                        $proposal->period,
                     ),
             ],
         );
@@ -230,7 +230,7 @@ class AdminActivityCalendarController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/activities/calendar/proposal',
-            ['proposal' => $proposal->getId()],
+            ['proposal' => $proposal->id],
         );
     }
 
@@ -244,7 +244,7 @@ class AdminActivityCalendarController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"activity_proposal_withdraw-" ~ args["proposal"].getId()'),
+        id: new Expression('"activity_proposal_withdraw-" ~ args["proposal"].id'),
         tokenKey: '_csrf_token',
     )]
     public function withdrawProposal(ActivityProposal $proposal): Response
@@ -262,7 +262,7 @@ class AdminActivityCalendarController extends AbstractController
 
             return $this->redirectToRoute(
                 'admin/activities/calendar/proposal',
-                ['proposal' => $proposal->getId()],
+                ['proposal' => $proposal->id],
             );
         }
 
@@ -288,9 +288,9 @@ class AdminActivityCalendarController extends AbstractController
         }
 
         $organs = [];
-        foreach ($user->getMember()->getCurrentOrganInstallations() as $installation) {
-            $organ = $installation->getOrgan();
-            $organs[intval($organ->getId())] = $organ;
+        foreach ($user->member->getCurrentOrganInstallations() as $installation) {
+            $organ = $installation->organ;
+            $organs[intval($organ->id)] = $organ;
         }
 
         return array_values($organs);

@@ -60,12 +60,12 @@ final readonly class MeetingQueryService
         usort(
             $points,
             static fn (MeetingPoint $a, MeetingPoint $b): int => [
-                $a->getDisplayPosition(),
-                $a->getId(),
+                $a->displayPosition,
+                $a->id,
             ]
                 <=> [
-                    $b->getDisplayPosition(),
-                    $b->getId(),
+                    $b->displayPosition,
+                    $b->id,
                 ],
         );
 
@@ -77,14 +77,14 @@ final readonly class MeetingQueryService
         $documentCount = count($references);
         foreach ($this->meetingDocumentRepository->findForMeeting($meeting) as $document) {
             $documentCount++;
-            $point = $document->getPoint();
+            $point = $document->point;
 
             if (null === $point) {
                 $meetingLevelDocuments[] = $document;
                 continue;
             }
 
-            $documentsByPointId[(int) $point->getId()][] = $document;
+            $documentsByPointId[(int) $point->id][] = $document;
         }
 
         $match = $this->matcher->match(
@@ -98,7 +98,7 @@ final readonly class MeetingQueryService
             $matchedDecisions = $match->decisionsForPoint($point);
             $pointViews[] = new MeetingPointView(
                 $point,
-                $documentsByPointId[(int) $point->getId()] ?? [],
+                $documentsByPointId[(int) $point->id] ?? [],
                 $matchedDecisions,
             );
 
@@ -113,7 +113,7 @@ final readonly class MeetingQueryService
             $decisionEntries[] = new DecisionListEntry(
                 $decision,
                 $point,
-                null === $point ? 0 : count($documentsByPointId[(int) $point->getId()] ?? []),
+                null === $point ? 0 : count($documentsByPointId[(int) $point->id] ?? []),
             );
         }
 
@@ -126,7 +126,7 @@ final readonly class MeetingQueryService
             $match->unmatched,
             $references,
             $meeting->getMinutes(),
-            $meeting->getLocalDetails(),
+            $meeting->localDetails,
             $documentCount,
         );
     }
@@ -138,7 +138,7 @@ final readonly class MeetingQueryService
     public function getStatus(Meeting $meeting): MeetingStatus
     {
         return MeetingStatus::derive(
-            $meeting->getDate(),
+            $meeting->date,
             !$meeting->getDecisions()->isEmpty(),
             null !== $meeting->getMinutes()?->getLatestVersion(),
         );
@@ -147,7 +147,7 @@ final readonly class MeetingQueryService
     public function getReadiness(MeetingView $view): MeetingReadiness
     {
         $numbers = array_map(
-            static fn (MeetingPointView $pointView): string => trim($pointView->point->getNumber()),
+            static fn (MeetingPointView $pointView): string => trim($pointView->point->number),
             $view->points,
         );
         $duplicates = array_keys(array_filter(
@@ -162,7 +162,7 @@ final readonly class MeetingQueryService
             $view->documentCount - count($view->references),
             count($view->references),
             null !== $view->minutes?->getLatestVersion(),
-            null !== $details && (null !== $details->getStartTime() || null !== $details->getLocation()),
+            null !== $details && (null !== $details->startTime || null !== $details->location),
             $duplicates,
             count($view->unmatchedDecisions),
         );

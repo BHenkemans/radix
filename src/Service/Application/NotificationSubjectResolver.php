@@ -58,12 +58,12 @@ final readonly class NotificationSubjectResolver
         foreach (NotificationType::cases() as $type) {
             $subjectIds = [];
             foreach ($notifications as $notification) {
-                $id = $notification->getId();
-                $subjectId = $notification->getSubjectId();
+                $id = $notification->id;
+                $subjectId = $notification->subjectId;
                 if (
                     null === $id
                     || null === $subjectId
-                    || $type !== $notification->getType()
+                    || $type !== $notification->type
                 ) {
                     continue;
                 }

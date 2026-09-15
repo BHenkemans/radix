@@ -24,7 +24,7 @@ final class CompanyUserRepositoryTest extends DatabaseTestCase
         );
         self::assertSame(
             'Nexunt Systems',
-            $companyUser->getCompany()->getName(),
+            $companyUser->company->name,
         );
     }
 
@@ -47,12 +47,12 @@ final class CompanyUserRepositoryTest extends DatabaseTestCase
             $second,
         );
         self::assertNotSame(
-            $first->getId(),
-            $second->getId(),
+            $first->id,
+            $second->id,
         );
         self::assertSame(
-            $first->getCompany(),
-            $second->getCompany(),
+            $first->company,
+            $second->company,
         );
     }
 
@@ -65,7 +65,7 @@ final class CompanyUserRepositoryTest extends DatabaseTestCase
         );
         self::assertSame(
             'talent@nexunt.example.com',
-            $byRepresentative[0]->getEmail(),
+            $byRepresentative[0]->email,
         );
 
         // Including the representative who has moved on: the board still has to be able to find and remove them.

@@ -41,7 +41,7 @@ class NotificationInteractionRepository extends ServiceEntityRepository
 
         $ids = [];
         foreach ($notifications as $notification) {
-            $id = $notification->getId();
+            $id = $notification->id;
             if (null === $id) {
                 continue;
             }
@@ -58,7 +58,7 @@ class NotificationInteractionRepository extends ServiceEntityRepository
             ->andWhere('i.notification IN (:notifications)')
             ->setParameter(
                 'user',
-                $user->getLidnr(),
+                $user->lidnr,
             )
             ->setParameter(
                 'notifications',
@@ -69,7 +69,7 @@ class NotificationInteractionRepository extends ServiceEntityRepository
 
         $byNotification = [];
         foreach ($interactions as $interaction) {
-            $id = $interaction->getNotification()->getId();
+            $id = $interaction->notification->id;
             if (null === $id) {
                 continue;
             }

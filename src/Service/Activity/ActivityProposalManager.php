@@ -81,9 +81,9 @@ final readonly class ActivityProposalManager
         ActivityDateOption $option,
         Member $decidedBy,
     ): void {
-        $proposal->setChosenOption($option);
-        $proposal->setDecidedBy($decidedBy);
-        $proposal->setDecidedAt(new DateTime());
+        $proposal->chosenOption = $option;
+        $proposal->decidedBy = $decidedBy;
+        $proposal->decidedAt = new DateTime();
 
         $this->activityProposalStateMachine->apply(
             $proposal,
@@ -97,8 +97,8 @@ final readonly class ActivityProposalManager
         ActivityProposal $proposal,
         Member $decidedBy,
     ): void {
-        $proposal->setDecidedBy($decidedBy);
-        $proposal->setDecidedAt(new DateTime());
+        $proposal->decidedBy = $decidedBy;
+        $proposal->decidedAt = new DateTime();
 
         $this->activityProposalStateMachine->apply(
             $proposal,
@@ -130,9 +130,9 @@ final readonly class ActivityProposalManager
         );
 
         // After the transition, so the listener that clears the stamp on the way out of `scheduled` cannot undo it.
-        $proposal->setBudgetClearance($outcome);
-        $proposal->setBudgetClearedBy($clearedBy);
-        $proposal->setBudgetClearedAt(new DateTime());
+        $proposal->budgetClearance = $outcome;
+        $proposal->budgetClearedBy = $clearedBy;
+        $proposal->budgetClearedAt = new DateTime();
 
         $this->entityManager->flush();
     }
@@ -154,7 +154,7 @@ final readonly class ActivityProposalManager
      */
     public function create(ActivityProposal $proposal): void
     {
-        $organ = $proposal->getOrgan();
+        $organ = $proposal->organ;
 
         // The board hosts its own activities and is held to no allowance, so there is nothing to serialise against.
         if (null === $organ) {
@@ -198,7 +198,7 @@ final readonly class ActivityProposalManager
             if (
                 $this->limitResolver->allowanceFor(
                     $organ,
-                    $proposal->getPeriod(),
+                    $proposal->period,
                 )->isExhausted()
             ) {
                 throw new ProposalAllowanceExhausted(
@@ -223,18 +223,18 @@ final readonly class ActivityProposalManager
      */
     private function tellTheBoard(ActivityProposal $proposal): void
     {
-        $proposalId = $proposal->getId();
+        $proposalId = $proposal->id;
 
         if (null === $proposalId) {
             return;
         }
 
         $notification = new Notification();
-        $notification->setType(NotificationType::ActivityProposalAwaitingDecision);
-        $notification->setContext([
+        $notification->type = NotificationType::ActivityProposalAwaitingDecision;
+        $notification->context = [
             'proposal' => strval($proposalId),
-            'proposalName' => $proposal->getName(),
-        ]);
+            'proposalName' => $proposal->name,
+        ];
         $notification->setRecipient(
             null,
             null,
@@ -250,8 +250,8 @@ final readonly class ActivityProposalManager
     ): string {
         return sprintf(
             'activity_proposal_%d_%d',
-            $proposal->getPeriod()->getId() ?? 0,
-            $organ->getId() ?? 0,
+            $proposal->period->id ?? 0,
+            $organ->id ?? 0,
         );
     }
 }

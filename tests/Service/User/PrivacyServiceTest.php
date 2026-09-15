@@ -107,7 +107,7 @@ final class PrivacyServiceTest extends TestCase
         PrivacyService $service,
         Member $target,
     ): bool {
-        return $service->yearOfBirthVisibilityFor([$target])[$target->getLidnr()];
+        return $service->yearOfBirthVisibilityFor([$target])[$target->lidnr];
     }
 
     private function service(
@@ -146,7 +146,7 @@ final class PrivacyServiceTest extends TestCase
     private function settings(bool $hidden): UserSettings
     {
         $settings = self::createStub(UserSettings::class);
-        $settings->method('getHideYearOfBirth')->willReturn($hidden);
+        $settings->hideYearOfBirth = $hidden;
 
         return $settings;
     }
@@ -154,7 +154,7 @@ final class PrivacyServiceTest extends TestCase
     private function target(int $lidnr): Member
     {
         $member = self::createStub(Member::class);
-        $member->method('getLidnr')->willReturn($lidnr);
+        $member->lidnr = $lidnr;
 
         return $member;
     }

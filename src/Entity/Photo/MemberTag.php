@@ -39,17 +39,7 @@ class MemberTag extends Tag
         referencedColumnName: 'lidnr',
         onDelete: 'CASCADE',
     )]
-    private MemberModel $member;
-
-    public function getMember(): MemberModel
-    {
-        return $this->member;
-    }
-
-    public function setMember(MemberModel $member): void
-    {
-        $this->member = $member;
-    }
+    public MemberModel $member;
 
     /**
      * @return MemberTagGdprArrayType
@@ -57,8 +47,8 @@ class MemberTag extends Tag
     public function toGdprArray(): array
     {
         return [
-            'id' => $this->getId(),
-            'photo' => $this->getPhoto()->toGdprArray(),
+            'id' => $this->id,
+            'photo' => $this->photo->toGdprArray(),
         ];
     }
 }

@@ -23,7 +23,7 @@ final class AlbumRepositoryTest extends DatabaseTestCase
         self::assertContains(
             'Trip 2024',
             array_map(
-                static fn (Album $album): string => $album->getName(),
+                static fn (Album $album): string => $album->name,
                 $results,
             ),
         );
@@ -31,7 +31,7 @@ final class AlbumRepositoryTest extends DatabaseTestCase
         // Every result is a published, dated, root album; the voter/graduate rule is applied later, in the service.
         foreach ($results as $album) {
             self::assertNull($album->getParent());
-            self::assertNotNull($album->getStartDateTime());
+            self::assertNotNull($album->startDateTime);
         }
     }
 
@@ -45,12 +45,12 @@ final class AlbumRepositoryTest extends DatabaseTestCase
         );
 
         $ids = array_map(
-            static fn (Album $album): int => (int) $album->getId(),
-            $this->repository()->searchPublishedAlbums($draft->getName()),
+            static fn (Album $album): int => (int) $album->id,
+            $this->repository()->searchPublishedAlbums($draft->name),
         );
 
         self::assertNotContains(
-            (int) $draft->getId(),
+            (int) $draft->id,
             $ids,
         );
     }

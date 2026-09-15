@@ -64,7 +64,7 @@ final readonly class ActivityAdminRow
     public static function fromRevision(ActivityRevision $revision): self
     {
         return self::build(
-            $revision->getActivity(),
+            $revision->activity,
             $revision,
         );
     }
@@ -73,24 +73,24 @@ final readonly class ActivityAdminRow
         Activity $activity,
         ActivityRevision $revision,
     ): self {
-        $id = $activity->getId();
+        $id = $activity->id;
         assert(null !== $id);
 
-        $revisionId = $revision->getId();
+        $revisionId = $revision->id;
         assert(null !== $revisionId);
 
-        $beginTime = $revision->getBeginTime();
-        $endTime = $revision->getEndTime();
+        $beginTime = $revision->beginTime;
+        $endTime = $revision->endTime;
 
         return new self(
             id: $id,
             revisionId: $revisionId,
             // Organ/company now live on the revision; the overview shows the working revision's values (not the
             // activity proxy, which would resolve to the live revision and hide a pending organ/company change).
-            organAbbr: $revision->getOrgan()?->getAbbr(),
-            nameNL: $revision->getName()->getValueNL(),
-            nameEN: $revision->getName()->getValueEN(),
-            companyName: $revision->getCompany()?->getName(),
+            organAbbr: $revision->organ?->abbr,
+            nameNL: $revision->name->getValueNL(),
+            nameEN: $revision->name->getValueEN(),
+            companyName: $revision->company?->name,
             submitter: $revision->getAuthorDisplayName(),
             status: $revision->getStatus(),
             beginTime: null === $beginTime

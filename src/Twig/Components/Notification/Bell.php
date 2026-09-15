@@ -163,16 +163,16 @@ class Bell
         $currentSince = null;
 
         foreach ($notifications as $notification) {
-            $id = $notification->getId();
+            $id = $notification->id;
             if (null === $id) {
                 continue;
             }
 
-            $context = $notification->getContext();
+            $context = $notification->context;
             $name = null === $context
                 ? null
                 : $this->contextResolver->resolve(
-                    $notification->getType(),
+                    $notification->type,
                     $context,
                     $language,
                 );
@@ -188,9 +188,9 @@ class Bell
                 };
             }
 
-            $unread = (null === $readAt || $notification->getCreatedAt() > $readAt)
-                && null === ($interactions[$id] ?? null)?->getReadAt();
-            $type = $notification->getType();
+            $unread = (null === $readAt || $notification->createdAt > $readAt)
+                && null === ($interactions[$id] ?? null)?->readAt;
+            $type = $notification->type;
             $key = $type->groupsAcrossSubjects()
                 ? $type->value
                 : $type->value . "\0" . $name;
@@ -199,7 +199,7 @@ class Bell
                 null !== $current
                 && $key === $currentKey
                 && null !== $currentSince
-                && $notification->getCreatedAt() >= $currentSince
+                && $notification->createdAt >= $currentSince
             ) {
                 $current['ids'][] = $id;
                 $current['unread'] += $unread
@@ -214,14 +214,14 @@ class Bell
             }
 
             $currentKey = $key;
-            $currentSince = $notification->getCreatedAt()->sub(new DateInterval(self::GROUP_WINDOW));
+            $currentSince = $notification->createdAt->sub(new DateInterval(self::GROUP_WINDOW));
             $current = [
                 'notification' => $notification,
                 'name' => $name,
                 'href' => $this->urlGenerator->generate(
                     $type->route(Firewall::Main),
                     $type->routeParameters(
-                        $notification->getSubjectId(),
+                        $notification->subjectId,
                         $context ?? [],
                     ),
                 ),
@@ -277,7 +277,7 @@ class Bell
         foreach ($entries as $entry) {
             if (count($entry['ids']) > 1) {
                 $entry['href'] = $this->urlGenerator->generate(
-                    $entry['notification']->getType()->manyRoute(Firewall::Main),
+                    $entry['notification']->type->manyRoute(Firewall::Main),
                 );
             }
 
@@ -290,7 +290,7 @@ class Bell
     public function getReadAt(): ?DateTimeImmutable
     {
         if (!$this->readAtLoaded) {
-            $this->readAt = $this->currentUser()?->getSettings()?->getNotificationsReadAt();
+            $this->readAt = $this->currentUser()?->settings?->notificationsReadAt;
             $this->readAtLoaded = true;
         }
 
@@ -307,7 +307,7 @@ class Bell
         $this->interact(
             $notifications,
             static function (NotificationInteraction $interaction): void {
-                $interaction->setReadAt(new DateTimeImmutable());
+                $interaction->readAt = new DateTimeImmutable();
             },
         );
     }
@@ -324,8 +324,8 @@ class Bell
             $notifications,
             static function (NotificationInteraction $interaction): void {
                 $now = new DateTimeImmutable();
-                $interaction->setDismissedAt($now);
-                $interaction->setReadAt($interaction->getReadAt() ?? $now);
+                $interaction->dismissedAt = $now;
+                $interaction->readAt ??= $now;
             },
         );
     }
@@ -338,8 +338,7 @@ class Bell
             return;
         }
 
-        $this->settingsRepository->getOrCreateForUser($user)
-            ->setNotificationsReadAt(new DateTimeImmutable());
+        $this->settingsRepository->getOrCreateForUser($user)->notificationsReadAt = new DateTimeImmutable();
         $this->entityManager->flush();
 
         $this->readAtLoaded = false;
@@ -371,7 +370,7 @@ class Bell
 
         $touched = false;
         foreach ($this->getEntries() as $entry) {
-            foreach (null === $entry['notification']->getId() ? [] : $entry['ids'] as $id) {
+            foreach (null === $entry['notification']->id ? [] : $entry['ids'] as $id) {
                 if (
                     !in_array(
                         $id,

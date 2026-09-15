@@ -126,7 +126,7 @@ final class SignupList
         return SignupListView::fromSignupList(
             $this->signupList,
             true,
-            $this->currentMember()->getLidnr(),
+            $this->currentMember()->lidnr,
             $this->translator,
         );
     }
@@ -181,7 +181,7 @@ final class SignupList
                 return new RedirectResponse(
                     $this->urlGenerator->generate(
                         'activity/view',
-                        ['activity' => $this->signupList->getActivity()->getId()],
+                        ['activity' => $this->signupList->getActivity()->id],
                     ),
                 );
             }
@@ -192,7 +192,7 @@ final class SignupList
         // Close the modal client-side (scoped to this list) now that the panel will re-render to the signed-up state.
         $this->dispatchBrowserEvent(
             'signup:success',
-            ['listId' => $this->signupList->getId()],
+            ['listId' => $this->signupList->id],
         );
 
         return null;
@@ -220,7 +220,7 @@ final class SignupList
      */
     private function isOpenForSignup(): bool
     {
-        return $this->signupList->getActivity()->getLiveRevision() === $this->signupList->getRevision()
+        return $this->signupList->getActivity()->getLiveRevision() === $this->signupList->revision
             && !$this->signupList->getActivity()->isFrozen()
             && $this->signupList->isOpen();
     }
@@ -246,7 +246,7 @@ final class SignupList
         $user = $this->security->getUser();
         assert($user instanceof User);
 
-        return $user->getMember();
+        return $user->member;
     }
 
     /**

@@ -72,7 +72,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
 
         return $this->render(
             'career/company/profile.html.twig',
@@ -96,7 +96,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
         $this->denyAccessUnlessGranted(
             RevisionVoter::SUBMIT,
             $company,
@@ -150,8 +150,8 @@ class CompanyProfileController extends AbstractRevisionReviewController
             [
                 'flow_key' => $run,
                 'finish_label' => $this->translator->trans('Save draft'),
-                'has_square_logo' => null !== $current->getSquareLogo(),
-                'has_banner_logo' => null !== $current->getBannerLogo(),
+                'has_square_logo' => null !== $current->squareLogo,
+                'has_banner_logo' => null !== $current->bannerLogo,
             ],
         );
         $flow->handleRequest($request);
@@ -222,7 +222,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         CompanyUser $companyUser,
     ): JsonResponse {
         return $this->pingLock(
-            $companyUser->getCompany(),
+            $companyUser->company,
             $companyUser,
         );
     }
@@ -241,7 +241,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         CompanyUser $companyUser,
     ): JsonResponse {
         return $this->releaseLock(
-            $companyUser->getCompany(),
+            $companyUser->company,
             $companyUser,
         );
     }
@@ -259,7 +259,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
         $this->denyAccessUnlessGranted(
             RevisionVoter::SUBMIT,
             $company,
@@ -318,7 +318,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
 
         return $this->renderStatus(
             $company,
@@ -338,7 +338,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
     ): Response {
         return $this->handleDecision(
             $request,
-            $this->requireCurrentRevision($companyUser->getCompany()),
+            $this->requireCurrentRevision($companyUser->company),
             $companyUser,
         );
     }
@@ -360,7 +360,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
         $current = $this->requireCurrentRevision($company);
 
         $this->denyAccessUnlessGranted(
@@ -401,7 +401,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         #[CurrentUser]
         CompanyUser $companyUser,
     ): Response {
-        $company = $companyUser->getCompany();
+        $company = $companyUser->company;
         $current = $this->requireCurrentRevision($company);
 
         $this->handleCommentPost(
@@ -459,7 +459,7 @@ class CompanyProfileController extends AbstractRevisionReviewController
         RevisionActions $actions,
     ): array {
         assert($revision instanceof CompanyRevision);
-        $company = $revision->getCompany();
+        $company = $revision->company;
 
         return [
             'company' => $company,

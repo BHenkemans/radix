@@ -61,7 +61,7 @@ class GdprService
      */
     public function collectMemberData(Member $member): array
     {
-        $lidnr = $member->getLidnr();
+        $lidnr = $member->lidnr;
         $user = $this->userRepository->find($lidnr);
         $profilePhoto = $this->profilePhotoRepository->getProfilePhotoByLidnr($lidnr);
 
@@ -162,7 +162,7 @@ class GdprService
                     $this->pollRepository->findPollsCreatedByMember($member),
                 ),
                 'reviewed' => array_map(
-                    static fn ($revision) => $revision->getPoll()->toGdprArray(),
+                    static fn ($revision) => $revision->poll->toGdprArray(),
                     $this->pollRevisionRepository->findReviewedByMember($member),
                 ),
             ],

@@ -49,17 +49,17 @@ final readonly class TagService
         if (
             null === $member
             || null !== $this->memberTagRepository->findTag(
-                (int) $photo->getId(),
+                (int) $photo->id,
                 $lidnr,
             )
-            || ($this->userSettingsRepository->find($lidnr)?->getPhotoTaggingOptOut() ?? false)
+            || ($this->userSettingsRepository->find($lidnr)->photoTaggingOptOut ?? false)
         ) {
             return null;
         }
 
         $tag = new MemberTag();
-        $tag->setPhoto($photo);
-        $tag->setMember($member);
+        $tag->photo = $photo;
+        $tag->member = $member;
         $tag->setPosition(
             $x,
             $y,
@@ -84,7 +84,7 @@ final readonly class TagService
         if (
             null === $organ
             || null !== $this->organTagRepository->findTag(
-                (int) $photo->getId(),
+                (int) $photo->id,
                 $organId,
             )
         ) {
@@ -92,8 +92,8 @@ final readonly class TagService
         }
 
         $tag = new OrganTag();
-        $tag->setPhoto($photo);
-        $tag->setOrgan($organ);
+        $tag->photo = $photo;
+        $tag->organ = $organ;
         $tag->setPosition(
             $x,
             $y,

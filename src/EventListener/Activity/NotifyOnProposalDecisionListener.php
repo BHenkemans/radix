@@ -77,7 +77,7 @@ final readonly class NotifyOnProposalDecisionListener
             return;
         }
 
-        $proposalId = $proposal->getId();
+        $proposalId = $proposal->id;
 
         if (null === $proposalId) {
             return;
@@ -86,7 +86,7 @@ final readonly class NotifyOnProposalDecisionListener
         $creator = $proposal->getCreatedBy();
         $user = null === $creator
             ? null
-            : $this->userRepository->find($creator->getLidnr());
+            : $this->userRepository->find($creator->lidnr);
 
         if (null === $user) {
             return;
@@ -97,7 +97,7 @@ final readonly class NotifyOnProposalDecisionListener
             $type,
             [
                 'proposal' => strval($proposalId),
-                'proposalName' => $proposal->getName(),
+                'proposalName' => $proposal->name,
             ],
             $level,
         );

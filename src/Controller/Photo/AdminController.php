@@ -129,7 +129,7 @@ class AdminController extends AbstractController
 
         if (
             null !== $weeklyPhoto
-            && !$weeklyPhoto->isHidden()
+            && !$weeklyPhoto->hidden
             && $this->withinHideWindow()
         ) {
             $this->weeklyPhotoService->hide($weeklyPhoto);
@@ -191,7 +191,7 @@ class AdminController extends AbstractController
 
         $this->albumAdminService->saveAlbum($album);
 
-        if ($album->isPublished()) {
+        if ($album->published) {
             $this->announceAlbumPublished($album);
         }
 
@@ -202,7 +202,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/photos/album',
-            ['album' => $album->getId()],
+            ['album' => $album->id],
         );
     }
 
@@ -219,7 +219,7 @@ class AdminController extends AbstractController
         Album $album,
         Request $request,
     ): Response {
-        $wasPublished = $album->isPublished();
+        $wasPublished = $album->published;
         $form = $this->createForm(AlbumType::class, $album)->handleRequest($request);
 
         if (
@@ -239,7 +239,7 @@ class AdminController extends AbstractController
 
         if (
             !$wasPublished
-            && $album->isPublished()
+            && $album->published
         ) {
             $this->announceAlbumPublished($album);
         }
@@ -251,13 +251,13 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/photos/album',
-            ['album' => $album->getId()],
+            ['album' => $album->id],
         );
     }
 
     private function announceAlbumPublished(Album $album): void
     {
-        $id = $album->getId();
+        $id = $album->id;
         if (null === $id) {
             return;
         }
@@ -275,7 +275,7 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"photo_album_delete-" ~ args["album"].getId()'),
+        id: new Expression('"photo_album_delete-" ~ args["album"].id'),
         tokenKey: '_csrf_token',
     )]
     public function deleteAlbum(Album $album): Response
@@ -342,10 +342,10 @@ class AdminController extends AbstractController
                 $parent = $album->getParent();
 
                 return [
-                    'id' => $album->getId(),
+                    'id' => $album->id,
                     'label' => null === $parent
-                        ? $album->getName()
-                        : $parent->getName() . ' / ' . $album->getName(),
+                        ? $album->name
+                        : $parent->name . ' / ' . $album->name,
                 ];
             },
             $this->albumRepository->searchForMove($query),
@@ -359,7 +359,7 @@ class AdminController extends AbstractController
         methods: ['POST'],
     )]
     #[IsCsrfTokenValid(
-        id: new Expression('"photo_album_cover-" ~ args["album"].getId()'),
+        id: new Expression('"photo_album_cover-" ~ args["album"].id'),
         tokenKey: '_csrf_token',
     )]
     public function regenerateCover(
@@ -380,7 +380,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/photos/album',
-            ['album' => $album->getId()],
+            ['album' => $album->id],
         );
     }
 
@@ -435,7 +435,7 @@ class AdminController extends AbstractController
 
             return $this->redirectToRoute(
                 'admin/photos/album',
-                ['album' => $album->getId()],
+                ['album' => $album->id],
             );
         }
 
@@ -454,7 +454,7 @@ class AdminController extends AbstractController
 
             return $this->redirectToRoute(
                 'admin/photos/album',
-                ['album' => $album->getId()],
+                ['album' => $album->id],
             );
         }
 
@@ -465,7 +465,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/photos/album',
-            ['album' => $album->getId()],
+            ['album' => $album->id],
         );
     }
 
@@ -495,7 +495,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute(
             'admin/photos/album',
-            ['album' => $album->getId()],
+            ['album' => $album->id],
         );
     }
 

@@ -52,12 +52,12 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
         );
 
         self::assertSame(
-            $gala->getId(),
-            $photoA->getAlbum()->getId(),
+            $gala->id,
+            $photoA->album->id,
         );
         self::assertSame(
-            $gala->getId(),
-            $photoB->getAlbum()->getId(),
+            $gala->id,
+            $photoB->album->id,
         );
         // One cover per distinct affected album (the single source and the destination), not per photo.
         self::assertSame(
@@ -89,8 +89,8 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
         );
 
         self::assertSame(
-            $trip->getId(),
-            $photo->getAlbum()->getId(),
+            $trip->id,
+            $photo->album->id,
         );
         self::assertSame(
             0,
@@ -102,8 +102,8 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
     {
         $trip = $this->album('Trip 2024');
         $photo = $this->storedPhoto($trip);
-        $path = $photo->getPath();
-        $id = (int) $photo->getId();
+        $path = $photo->path;
+        $id = (int) $photo->id;
         self::assertTrue($this->storage()->exists($path));
 
         $this->service()->deletePhotos([$photo]);
@@ -125,10 +125,10 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
         $this->entityManager->flush();
 
         $photo = $this->storedPhoto($child);
-        $path = $photo->getPath();
-        $parentId = (int) $parent->getId();
-        $childId = (int) $child->getId();
-        $photoId = (int) $photo->getId();
+        $path = $photo->path;
+        $parentId = (int) $parent->id;
+        $childId = (int) $child->id;
+        $photoId = (int) $photo->id;
         self::assertTrue($this->storage()->exists($path));
 
         // Reload the album exactly as the controller does from a route parameter, so the delete walks fresh
@@ -183,8 +183,8 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
     private function newAlbum(string $name): Album
     {
         $album = new Album();
-        $album->setName($name);
-        $album->setPublished(false);
+        $album->name = $name;
+        $album->published = false;
         $this->entityManager->persist($album);
         $this->entityManager->flush();
 
@@ -231,15 +231,15 @@ final class AlbumAdminServiceTest extends DatabaseTestCase
         $stored = $this->storage()->store(
             StorageNamespace::PhotoOriginal,
             $file,
-            (string) $album->getId(),
+            (string) $album->id,
         );
         unlink($file);
 
         $photo = new Photo();
-        $photo->setAlbum($album);
-        $photo->setPath($stored->path);
-        $photo->setDateTime(new DateTime());
-        $photo->setAspectRatio(30 / 40);
+        $photo->album = $album;
+        $photo->path = $stored->path;
+        $photo->dateTime = new DateTime();
+        $photo->aspectRatio = 30 / 40;
         $this->entityManager->persist($photo);
         $this->entityManager->flush();
 

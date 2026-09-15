@@ -34,7 +34,7 @@ final readonly class ExternalSignupTokenResolver
         $verification = $this->verificationRepository->findBySelector($split['selector']);
         if (
             null === $verification
-            || $verification->getPurpose() !== $purpose
+            || $verification->purpose !== $purpose
             || $verification->isExpired()
         ) {
             return null;
@@ -42,7 +42,7 @@ final readonly class ExternalSignupTokenResolver
 
         if (
             !SplitToken::matches(
-                $verification->getHashedToken(),
+                $verification->hashedToken,
                 $split['verifier'],
                 ExternalSignupVerification::HASH_ALGO,
             )

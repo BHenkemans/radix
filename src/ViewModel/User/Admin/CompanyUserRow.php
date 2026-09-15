@@ -24,10 +24,10 @@ final readonly class CompanyUserRow
     public static function fromCompanyUser(CompanyUser $companyUser): self
     {
         return new self(
-            id: (int) $companyUser->getId(),
-            companyName: $companyUser->getCompany()->getName(),
-            representativeName: $companyUser->getName(),
-            representativeEmail: $companyUser->getEmail(),
+            id: (int) $companyUser->id,
+            companyName: $companyUser->company->name,
+            representativeName: $companyUser->name,
+            representativeEmail: $companyUser->email,
             mfaEnabled: $companyUser->isTotpAuthenticationEnabled(),
             disabled: $companyUser->isDisabled(),
         );
