@@ -10,10 +10,10 @@ use Symfony\Component\Mime\Address;
  * The mailboxes the website writes to when something is put in front of the association rather than in front of a
  * member: an officer, a committee, or a body that has to arrange something.
  *
- * Held here rather than at each send site so a deployment names each address once, and so who reviews what is a
- * question answered by the domain that raises the message instead of by whoever wrote the template.
+ * Defined here rather than at each send site so a deployment names each address once, and so who reviews what is
+ * decided by the domain that raises the message instead of by the author of the template.
  */
-final readonly class OfficeMailboxes
+final readonly class AssociationMailboxes
 {
     public function __construct(
         private string $mailToInternalAffairsAddress,

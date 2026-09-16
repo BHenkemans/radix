@@ -9,7 +9,7 @@ use App\Entity\Application\Enums\NotificationType;
 use App\Entity\Application\RevisionInterface;
 use App\Entity\Frontpage\PollRevision;
 use App\Entity\User\Enums\UserRoles;
-use App\Service\Application\OfficeMailboxes;
+use App\Service\Application\AssociationMailboxes;
 use App\Service\Application\RevisionNotificationInterface;
 use Override;
 
@@ -17,11 +17,11 @@ use function assert;
 use function sprintf;
 
 /**
- * A question put to the whole association is the board's to agree to, and nobody else's.
+ * A question put to the whole association is the board's to approve, and no other body's.
  */
 final readonly class PollRevisionNotification implements RevisionNotificationInterface
 {
-    public function __construct(private OfficeMailboxes $mailboxes)
+    public function __construct(private AssociationMailboxes $mailboxes)
     {
     }
 

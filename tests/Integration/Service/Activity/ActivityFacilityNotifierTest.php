@@ -8,15 +8,15 @@ use App\Entity\Activity\ActivityRevision;
 use App\Entity\Application\Enums\RevisionStatus;
 use App\Repository\Activity\ActivityRevisionRepository;
 use App\Service\Activity\ActivityFacilityNotifier;
-use App\Service\Application\OfficeMailboxes;
+use App\Service\Application\AssociationMailboxes;
 use App\Tests\Integration\DatabaseTestCase;
 use Symfony\Component\Mime\Email;
 
 use function array_map;
 
 /**
- * GEFLITST are told the moment an activity asks for a photographer, and their Planka board is addressed on the same
- * message so that it files a card and a reply reaches everybody. The board is named by a header rather than by
+ * GEFLITST are notified the moment an activity requests a photographer, and their Planka board is addressed on the
+ * same message so that it files a card and a reply reaches everybody. The board is named by a header rather than by
  * anything in the body, so these pin the envelope rather than the words.
  */
 final class ActivityFacilityNotifierTest extends DatabaseTestCase
@@ -28,7 +28,7 @@ final class ActivityFacilityNotifierTest extends DatabaseTestCase
 
         self::getContainer()->get(ActivityFacilityNotifier::class)->created($revision);
 
-        $mailboxes = self::getContainer()->get(OfficeMailboxes::class);
+        $mailboxes = self::getContainer()->get(AssociationMailboxes::class);
         $message = $this->onlyMessage();
 
         // Against the configured mailboxes rather than literal addresses: what matters is that both are written to,
@@ -50,7 +50,7 @@ final class ActivityFacilityNotifierTest extends DatabaseTestCase
     }
 
     /**
-     * Planka answers by replying, so the reply has to reach whoever asked rather than the association at large.
+     * Planka replies to the message, so the reply has to reach the requester rather than the association at large.
      */
     public function testTheRequesterIsWhoAReplyReaches(): void
     {

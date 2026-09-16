@@ -307,8 +307,8 @@ final class PhotoApiTest extends ApiTestCase
         // The seed's afterparty starts four hours after its dinner, so a chronological listing puts the dinner first.
         self::assertSame(
             [
-                'Gala 2024 – Dinner',
-                'Gala 2024 – Afterparty',
+                'Gala 2024 - Dinner',
+                'Gala 2024 - Afterparty',
             ],
             array_column(
                 $body['data']['children'],
@@ -791,7 +791,7 @@ final class PhotoApiTest extends ApiTestCase
         return (string) ob_get_clean();
     }
 
-    /** Serving never encodes: a variant must exist before the request, or the endpoint answers 503. */
+    /** Serving never encodes: a variant must exist before the request, or the endpoint returns 503. */
     private function pregenerate(
         string $path,
         ImageVariant $variant,

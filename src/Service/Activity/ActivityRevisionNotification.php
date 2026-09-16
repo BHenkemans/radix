@@ -9,7 +9,7 @@ use App\Entity\Application\Enums\Languages;
 use App\Entity\Application\Enums\NotificationType;
 use App\Entity\Application\RevisionInterface;
 use App\Entity\User\Enums\UserRoles;
-use App\Service\Application\OfficeMailboxes;
+use App\Service\Application\AssociationMailboxes;
 use App\Service\Application\RevisionNotificationInterface;
 use Override;
 
@@ -17,11 +17,11 @@ use function assert;
 use function sprintf;
 
 /**
- * An activity waiting to be published is the board's to look at.
+ * An activity waiting to be published is reviewed by the board.
  */
 final readonly class ActivityRevisionNotification implements RevisionNotificationInterface
 {
-    public function __construct(private OfficeMailboxes $mailboxes)
+    public function __construct(private AssociationMailboxes $mailboxes)
     {
     }
 

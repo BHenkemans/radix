@@ -20,7 +20,7 @@ use function array_values;
 use function intval;
 
 /**
- * The album browsing service must only ever surface albums the current user may view: members see published albums,
+ * The album browsing service must only ever show albums the current user may view: members see published albums,
  * board and admins also see unpublished ones, and every album (including sub-albums) passes the album voter.
  */
 final class AlbumServiceTest extends DatabaseTestCase
@@ -194,8 +194,8 @@ final class AlbumServiceTest extends DatabaseTestCase
         // The afterparty starts four hours after the dinner, so a chronological listing puts the dinner first.
         self::assertSame(
             [
-                'Gala 2024 – Dinner',
-                'Gala 2024 – Afterparty',
+                'Gala 2024 - Dinner',
+                'Gala 2024 - Afterparty',
             ],
             array_map(
                 static fn (Album $album): string => $album->name,

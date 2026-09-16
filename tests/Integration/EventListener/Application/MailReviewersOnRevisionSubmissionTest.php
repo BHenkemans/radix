@@ -11,7 +11,7 @@ use App\Entity\Decision\Member;
 use App\Entity\User\User;
 use App\Repository\Activity\ActivityRevisionRepository;
 use App\Security\User\MfaEnforcementSwitch;
-use App\Service\Application\OfficeMailboxes;
+use App\Service\Application\AssociationMailboxes;
 use App\Tests\Integration\DatabaseTestCase;
 use DateTimeImmutable;
 use Symfony\Component\Mime\Email;
@@ -20,13 +20,13 @@ use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
- * Handing a revision in writes to the office that reviews it, so that something waiting is noticed by the officer
- * whose job it is rather than by whoever signs in next. The exception is the officer submitting their own work, which
- * is what made the old website's version of these easy to ignore.
+ * Submitting a revision writes to the mailbox of whoever reviews it, so that something waiting is noticed by the
+ * officer whose job it is rather than by the next member who signs in. The exception is the officer submitting
+ * their own work, which is what made the old website's version of these easy to ignore.
  */
 final class MailReviewersOnRevisionSubmissionTest extends DatabaseTestCase
 {
-    public function testSubmittingWritesToTheOfficeThatReviewsIt(): void
+    public function testSubmittingWritesToTheMailboxThatReviewsIt(): void
     {
         $draft = $this->draft();
         $this->authenticateAuthorOf(
@@ -44,13 +44,13 @@ final class MailReviewersOnRevisionSubmissionTest extends DatabaseTestCase
     }
 
     /**
-     * The board reviews activities, so a board member handing one in is telling themselves.
+     * The board reviews activities, so a board member submitting one is notifying themselves.
      */
     public function testNothingIsSentWhenTheSubmitterReviewsThisThemselves(): void
     {
-        // Without this a board member's account answers with no ROLE_BOARD at all: enforcement is on by default and
-        // strips it from anyone who has not enrolled in multi-factor authentication, which the seed's members have
-        // not. What is under test is what happens when the submitter does hold the role.
+        // Without this a board member's account has no ROLE_BOARD at all: enforcement is on by default and strips it
+        // from anyone who has not enrolled in multi-factor authentication, which the seed's members have not. What is
+        // under test is what happens when the submitter does have the role.
         MfaEnforcementSwitch::setEnabled(false);
 
         $draft = $this->draft();
@@ -73,7 +73,7 @@ final class MailReviewersOnRevisionSubmissionTest extends DatabaseTestCase
      */
     private function internalAffairs(): string
     {
-        return self::getContainer()->get(OfficeMailboxes::class)->internalAffairs()->getAddress();
+        return self::getContainer()->get(AssociationMailboxes::class)->internalAffairs()->getAddress();
     }
 
     /**
@@ -137,7 +137,7 @@ final class MailReviewersOnRevisionSubmissionTest extends DatabaseTestCase
     private function aBoardMember(): Member
     {
         foreach ($this->entityManager->getRepository(Member::class)->findAll() as $member) {
-            // An account as well as an installation: the roles a submission is weighed against are read off the
+            // An account as well as an installation: the roles a submission is weighed against are read from the
             // account, so a board member without one would be treated as any other author.
             if (
                 !$member->isBoardMember()
