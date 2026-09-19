@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { sudoConfirmUrl } from '../../js/sudo.ts';
 
 /**
  * One request per file, like the album upload, so a file the server rejects reports itself on its own row and the rest
@@ -142,6 +143,16 @@ export default class extends Controller<HTMLElement> {
 
         request.addEventListener('load', () => {
             this.requests.delete(request);
+
+            // A window that ran out mid-batch is not a rejected file: every remaining row would report a failure it
+            // cannot explain, so the browser is sent to confirm instead.
+            const confirmUrl = sudoConfirmUrl(request.status, request.responseText);
+            if (null !== confirmUrl) {
+                window.location.assign(confirmUrl);
+
+                return;
+            }
+
             this._settle(row, request.status >= 200 && request.status < 300, this._reason(request));
         });
 

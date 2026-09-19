@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller\Database;
 
+use App\Attribute\Application\RendersOnSuccess;
 use App\Controller\Application\HandlesFormFlowTrait;
+use App\Controller\Application\RendersRejectedSubmissionTrait;
 use App\Entity\Database\Enums\MembershipTypes;
 use App\Form\Database\MemberApproveType;
 use App\Form\Database\MemberRenewalType;
@@ -43,6 +45,7 @@ use function assert;
 final class ProspectiveMemberController extends AbstractController
 {
     use HandlesFormFlowTrait;
+    use RendersRejectedSubmissionTrait;
 
     public function __construct(
         private readonly MemberService $memberService,
@@ -71,6 +74,7 @@ final class ProspectiveMemberController extends AbstractController
      *
      * `join_index` is declared in config/routes.yaml; the sign-up host allowlists the address it is served at.
      */
+    #[RendersOnSuccess]
     public function subscribe(Request $request): Response
     {
         if (!$this->registrationService->isOpen($request->getClientIp())) {
@@ -127,14 +131,29 @@ final class ProspectiveMemberController extends AbstractController
             );
         }
 
+        // Reading the step form is what acts on the clicked button and so moves the flow on, which has to happen
+        // before it is asked whether the step was handed in. Not on the finished path: the handler of the finish
+        // button clears the flow, and what was entered is still read there.
+        $form = $flow->getStepForm();
+
+        if ($this->stepWasHandedIn($flow)) {
+            return $this->redirectToRoute(
+                'join_index',
+                ['_locale' => $request->getLocale()],
+            );
+        }
+
         $this->flashRejectedStep(
             $flow,
             $this->translator,
         );
 
+        // This action declares RendersOnSuccess for the page above, so nothing else sets the status on a rejected
+        // step.
         return $this->render(
             'database/join/subscribe.html.twig',
-            ['form' => $flow->getStepForm()],
+            ['form' => $form],
+            $this->rejectedSubmission($flow),
         );
     }
 
@@ -148,6 +167,7 @@ final class ProspectiveMemberController extends AbstractController
      * `join_renew` is declared in config/routes.yaml, along with the two addresses this used to be served at, which
      * redirect here because a renewal e-mail sent months ago links to one of them.
      */
+    #[RendersOnSuccess]
     public function renew(
         Request $request,
         string $token,
@@ -192,9 +212,12 @@ final class ProspectiveMemberController extends AbstractController
             }
         }
 
+        // As with the registration above: this action renders its own success page, so it sets the status itself
+        // when the response is a rejection rather than the form being opened.
         return $this->render(
             'database/join/renew.html.twig',
             ['form' => $form],
+            $this->rejectedSubmission($form),
         );
     }
 

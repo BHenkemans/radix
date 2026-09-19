@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Activity;
 
+use App\Attribute\User\Replayable;
 use App\Controller\Application\HandlesFormFlowTrait;
 use App\Controller\Application\HoldsEditLockTrait;
 use App\Entity\Activity\Activity;
@@ -80,6 +81,7 @@ class AdminController extends AbstractController
         return $this->render('activity/admin/index.html.twig');
     }
 
+    #[Replayable]
     #[Route(
         path: '/create',
         name: 'create',
@@ -196,18 +198,7 @@ class AdminController extends AbstractController
         );
     }
 
-    /**
-     * Whether the request submitted a step, which is followed by a redirect rather than a page: refreshing a page
-     * reached by a POST sends that POST again, and a submission the flow cannot place lands on whichever step it has
-     * since moved to, emptying every field of a step no user filled in.
-     */
-    private function stepWasHandedIn(FormFlowInterface $flow): bool
-    {
-        return $flow->isSubmitted()
-            && $flow->isValid()
-            && !$flow->isFinished();
-    }
-
+    #[Replayable]
     #[Route(
         path: '/{activity}/signup-lists/add',
         name: 'signup_list_add',
@@ -323,6 +314,7 @@ class AdminController extends AbstractController
         return $revision;
     }
 
+    #[Replayable]
     #[Route(
         path: '/{activity}/edit',
         name: 'edit',
@@ -944,6 +936,7 @@ class AdminController extends AbstractController
      * checkbox) and creates the sign-up already-verified (no double opt-in email). Allowed only while the list is
      * open, mirroring the public sign-up window.
      */
+    #[Replayable]
     #[Route(
         path: '/{activity}/signups/{signupList}/add-external',
         name: 'add_external_signup',

@@ -24,6 +24,7 @@ use App\Security\User\Firewall;
 use App\Security\User\HandlerRegistry;
 use App\Security\User\MfaPolicy;
 use App\Security\User\SudoMode;
+use App\Security\User\SudoReplay;
 use App\Service\Application\AltchaSolutionGuard;
 use App\Service\Application\RealtimeAuthorization;
 use App\Service\User\AccountPasswordService;
@@ -588,6 +589,7 @@ abstract class AbstractSecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $hasher,
         SudoMode $sudoMode,
+        SudoReplay $sudoReplay,
         TotpAuthenticatorInterface $totpAuthenticator,
         BackupCodeManager $backupCodeManager,
         #[Autowire(service: 'limiter.sudo_confirm_ip')]
@@ -600,9 +602,15 @@ abstract class AbstractSecurityController extends AbstractController
         $mfaRequired = $user->isTotpAuthenticationEnabled();
         $sudoConfirmRouteName = $this->routePrefix . 'sudo_confirm';
         $next = $this->safeNextUrl($request->query->getString('next'));
+        $stash = $request->query->getString('stash');
 
         if ($sudoMode->isActive()) {
-            return new RedirectResponse($next);
+            return $this->afterSudo(
+                $request,
+                $sudoReplay,
+                $stash,
+                $next,
+            );
         }
 
         $form = $this->createForm(
@@ -621,6 +629,8 @@ abstract class AbstractSecurityController extends AbstractController
                 $form,
                 $sudoConfirmRouteName,
                 $next,
+                $stash,
+                $sudoReplay,
             );
         }
 
@@ -650,6 +660,8 @@ abstract class AbstractSecurityController extends AbstractController
                 $form,
                 $sudoConfirmRouteName,
                 $next,
+                $stash,
+                $sudoReplay,
             );
         }
 
@@ -701,6 +713,8 @@ abstract class AbstractSecurityController extends AbstractController
                 $form,
                 $sudoConfirmRouteName,
                 $next,
+                $stash,
+                $sudoReplay,
             );
         }
 
@@ -730,6 +744,39 @@ abstract class AbstractSecurityController extends AbstractController
             ['secondFactorRequired' => $mfaRequired],
             $request,
         );
+
+        return $this->afterSudo(
+            $request,
+            $sudoReplay,
+            $stash,
+            $next,
+        );
+    }
+
+    /**
+     * Where the user goes once the grant is theirs: into the write they were refused, for an action that declares
+     * {@see \App\Attribute\User\Replayable}, and back to the page they submitted from for every other one.
+     *
+     * Only a submission of the prompt sends the write. This address is reached by navigation as well, and a grant
+     * may already be live when one of those arrives: a reload, a page restored from history, a second tab that has
+     * just confirmed. Reading the stash on a GET would send a write the user pressed nothing for.
+     */
+    private function afterSudo(
+        Request $request,
+        SudoReplay $sudoReplay,
+        string $stash,
+        string $next,
+    ): Response {
+        if (
+            '' !== $stash
+            && $request->isMethod(Request::METHOD_POST)
+        ) {
+            $replayed = $sudoReplay->replay($stash);
+
+            if (null !== $replayed) {
+                return $replayed;
+            }
+        }
 
         return new RedirectResponse($next);
     }
@@ -1078,6 +1125,8 @@ abstract class AbstractSecurityController extends AbstractController
         FormInterface $form,
         string $sudoConfirmRouteName,
         string $next,
+        string $stash,
+        SudoReplay $sudoReplay,
     ): Response {
         return $this->render(
             'user/sudo-confirm.html.twig',
@@ -1085,6 +1134,8 @@ abstract class AbstractSecurityController extends AbstractController
                 'form' => $form,
                 'sudoConfirmRoute' => $sudoConfirmRouteName,
                 'next' => $next,
+                'stash' => $stash,
+                'pending' => $sudoReplay->outcomeFor($stash),
             ],
         );
     }

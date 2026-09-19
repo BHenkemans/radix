@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Career;
 
+use App\Attribute\User\Replayable;
 use App\Controller\Application\HandlesFormFlowTrait;
 use App\Controller\Application\HoldsEditLockTrait;
 use App\Entity\Application\Enums\AlertTypes;
@@ -78,6 +79,7 @@ class AdminVacancyController extends AbstractController
         );
     }
 
+    #[Replayable]
     #[Route(
         path: '/create',
         name: 'create',
@@ -117,6 +119,18 @@ class AdminVacancyController extends AbstractController
         $flow->handleRequest($request);
 
         if (!$flow->isFinished()) {
+            // Reading the step form is what acts on the clicked button and so moves the flow on, which has to
+            // happen before it is asked whether the step was handed in. Not on the finished path: the handler of
+            // the finish button clears the flow, and what was entered is still read there.
+            $form = $flow->getStepForm();
+
+            if ($this->stepWasHandedIn($flow)) {
+                return $this->redirectToRoute(
+                    'admin/career/vacancies/create',
+                    [self::FLOW_RUN => $run],
+                );
+            }
+
             $this->flashRejectedStep(
                 $flow,
                 $this->translator,
@@ -124,7 +138,7 @@ class AdminVacancyController extends AbstractController
 
             return $this->render(
                 'career/admin/vacancies/create.html.twig',
-                ['form' => $flow->getStepForm()],
+                ['form' => $form],
             );
         }
 
@@ -194,6 +208,7 @@ class AdminVacancyController extends AbstractController
         );
     }
 
+    #[Replayable]
     #[Route(
         path: '/{vacancy}/edit',
         name: 'edit',
@@ -271,6 +286,21 @@ class AdminVacancyController extends AbstractController
         $flow->handleRequest($request);
 
         if (!$flow->isFinished()) {
+            // Reading the step form is what acts on the clicked button and so moves the flow on, which has to
+            // happen before it is asked whether the step was handed in. Not on the finished path: the handler of
+            // the finish button clears the flow, and what was entered is still read there.
+            $form = $flow->getStepForm();
+
+            if ($this->stepWasHandedIn($flow)) {
+                return $this->redirectToRoute(
+                    'admin/career/vacancies/edit',
+                    [
+                        'vacancy' => $vacancy->id,
+                        self::FLOW_RUN => $run,
+                    ],
+                );
+            }
+
             $this->flashRejectedStep(
                 $flow,
                 $this->translator,
@@ -279,7 +309,7 @@ class AdminVacancyController extends AbstractController
             return $this->render(
                 'career/admin/vacancies/edit.html.twig',
                 [
-                    'form' => $flow->getStepForm(),
+                    'form' => $form,
                     'vacancy' => $vacancy,
                     'comments' => $this->commentRepository->findThreadForVacancy($vacancy),
                 ],

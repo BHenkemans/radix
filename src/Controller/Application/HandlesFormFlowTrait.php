@@ -27,7 +27,7 @@ trait HandlesFormFlowTrait
 
     /**
      * The key the flow being filled in is kept under. Every arrival gets one of its own, or opening a form that was
-     * abandoned half-way would carry on where it was left off rather than start over. It is passed in the address,
+     * abandoned half-way would continue where it was left off rather than start over. It is passed in the address,
      * so reloading a step stays in the same run.
      *
      * Returns a redirect on the first arrival, which the caller has to return.
@@ -46,6 +46,18 @@ trait HandlesFormFlowTrait
                 self::FLOW_RUN => bin2hex(random_bytes(8)),
             ],
         );
+    }
+
+    /**
+     * Whether the request submitted a step, which is followed by a redirect rather than a page: refreshing a page
+     * reached by a POST sends that POST again, and a submission the flow cannot place is applied to whichever step it
+     * has since moved to, clearing every field of a step no user filled in.
+     */
+    private function stepWasHandedIn(FormFlowInterface $flow): bool
+    {
+        return $flow->isSubmitted()
+            && $flow->isValid()
+            && !$flow->isFinished();
     }
 
     /**

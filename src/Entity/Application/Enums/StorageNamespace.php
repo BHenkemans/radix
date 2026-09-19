@@ -6,8 +6,10 @@ namespace App\Entity\Application\Enums;
 
 use InvalidArgumentException;
 
+use function array_any;
 use function in_array;
 use function sprintf;
+use function str_contains;
 
 /**
  * The domains that {@see \App\Service\Application\FileStorage} stores files for. Each case maps a domain onto its
@@ -60,7 +62,17 @@ enum StorageNamespace: string
     /** A watermarked course document built for one download, deleted once collected or expired. */
     case EducationDownload = 'education-download';
 
+    /** The uploads of a write that was refused for want of a sudo grant, scoped per stash and never served. */
+    case SudoStash = 'sudo-stash';
+
     private const int MEGABYTE = 1024 * 1024;
+
+    /** What makes a scope a path rather than the single segment {@see requireScope()} requires it to be. */
+    private const array PATH_SEPARATORS = [
+        '/',
+        '\\',
+        '..',
+    ];
 
     /**
      * The directory prefix (no leading or trailing slash) this namespace stores into, relative to the storage root.
@@ -122,6 +134,10 @@ enum StorageNamespace: string
                 $scope,
                 'education/downloads',
             ),
+            self::SudoStash => sprintf(
+                'sudo-stash/%s',
+                $this->requireScope($scope),
+            ),
         };
     }
 
@@ -140,7 +156,8 @@ enum StorageNamespace: string
             self::MeetingDocument,
             self::MeetingMinutes,
             self::EducationDocument,
-            self::EducationDocumentPage => true,
+            self::EducationDocumentPage,
+            self::SudoStash => true,
             default => false,
         };
     }
@@ -163,7 +180,8 @@ enum StorageNamespace: string
             self::ReferenceDocument,
             self::EducationDocument,
             self::EducationDocumentPage,
-            self::EducationDownload => true,
+            self::EducationDownload,
+            self::SudoStash => true,
             default => false,
         };
     }
@@ -210,6 +228,14 @@ enum StorageNamespace: string
      */
     public function acceptsMimeType(string $mimeType): bool
     {
+        // A stash is written as it was received, because which types are accepted depends on the action the write
+        // was addressed to and that action has not run yet. It applies its own namespace on the replay, so nothing
+        // reaches storage for good without the check it would have had. Refusing every type here keeps the stash out
+        // of store(), which is the path that would otherwise accept it on this list.
+        if (self::SudoStash === $this) {
+            return false;
+        }
+
         return in_array(
             $mimeType,
             $this->allowedMimeTypes(),
@@ -249,6 +275,28 @@ enum StorageNamespace: string
                 sprintf(
                     'Storage namespace "%s" requires a scope.',
                     $this->value,
+                ),
+            );
+        }
+
+        // A scope names one entity: an album, a company, a meeting, a course. It is a segment of the path and never
+        // a path itself, so a separator or a dot segment in it would address a directory of another namespace, or of
+        // none. Every caller derives one from an id, so this only ever applies to one that reaches here from a
+        // request.
+        if (
+            array_any(
+                self::PATH_SEPARATORS,
+                static fn (string $separator): bool => str_contains(
+                    $scope,
+                    $separator,
+                ),
+            )
+        ) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Storage namespace "%s" was given a scope that is a path: "%s".',
+                    $this->value,
+                    $scope,
                 ),
             );
         }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\User;
 
+use App\Attribute\Application\RendersOnSuccess;
+use App\Controller\Application\RendersRejectedSubmissionTrait;
 use App\Entity\User\CompanyUser;
 use App\Entity\User\Enums\UserRoles;
 use App\Entity\User\Enums\UserTypes;
@@ -47,6 +49,8 @@ use function sprintf;
 )]
 class UserController extends AbstractSecurityController
 {
+    use RendersRejectedSubmissionTrait;
+
     public function __construct(
         TranslatorInterface $translator,
         SessionManager $sessionManager,
@@ -87,6 +91,7 @@ class UserController extends AbstractSecurityController
      * Routed from {@see /config/routes.yaml} (`user_token`) rather than via an attribute, so it stays a plain locale-
      * less URL.
      */
+    #[RendersOnSuccess]
     public function token(
         Request $request,
         string $app,
@@ -177,6 +182,9 @@ class UserController extends AbstractSecurityController
                 'form' => $form,
                 'reminder' => $reminder,
             ],
+            // This action declares RendersOnSuccess for the page that redirects the user back to the application, so
+            // a rejected consent must set the status itself.
+            $this->rejectedSubmission($form),
         );
     }
 
