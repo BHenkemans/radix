@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository\Photo;
 
+use App\Entity\Activity\Activity;
 use App\Entity\Photo\Album;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -92,41 +93,6 @@ class AlbumRepository extends ServiceEntityRepository
             ->orderBy(
                 'a.startDateTime',
                 SortDirection::Descending,
-            )
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Albums matching a name fragment, for the admin move-photos picker. Unlike the public cross-year search
-     * ({@see self::searchPublishedAlbums}) this is not restricted to published, dated, root albums: a photo can be
-     * moved into any album, drafts and sub-albums included. The parent is fetch-joined for a disambiguating label, and
-     * the result is capped so the typeahead stays light.
-     *
-     * @return Album[]
-     */
-    public function searchForMove(
-        string $query,
-        int $limit = 25,
-    ): array {
-        return $this->createQueryBuilder('a')
-            ->leftJoin(
-                'a.parent',
-                'parent',
-            )
-            ->addSelect('parent')
-            ->where('a.name LIKE :query')
-            ->setParameter(
-                'query',
-                '%' . addcslashes(
-                    $query,
-                    '%_',
-                ) . '%',
-            )
-            ->orderBy(
-                'a.name',
-                SortDirection::Ascending,
             )
             ->setMaxResults($limit)
             ->getQuery()
@@ -262,6 +228,28 @@ class AlbumRepository extends ServiceEntityRepository
             ->setParameter(
                 'parent',
                 $album,
+            )
+            ->orderBy(
+                'a.startDateTime',
+                SortDirection::Ascending,
+            )
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The published albums linked directly to an activity, oldest first.
+     *
+     * @return Album[]
+     */
+    public function findPublishedByActivity(Activity $activity): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.activity = :activity')
+            ->andWhere('a.published = TRUE')
+            ->setParameter(
+                'activity',
+                $activity,
             )
             ->orderBy(
                 'a.startDateTime',
