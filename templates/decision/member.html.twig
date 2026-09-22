@@ -12,9 +12,10 @@
 {% set isSelf = is_granted(member.getSelfRole) %}
 {% set isBoard = is_granted('ROLE_BOARD') %}
 {% set showPrivateDetails = isSelf or isBoard %}
-{# The birth date is the one detail of the panel below another member may see, when this member shares their year of
-   birth and the reader shares theirs; `canSeeYearOfBirth` already answers yes for the board. #}
-{% set showBirthDate = showPrivateDetails or canSeeYearOfBirth %}
+{# The birth date is the one row of the panel below that another member may see, so the panel also opens on the
+   year-of-birth rule alone. That rule already covers the board, but not a member viewing their own page while hiding
+   their year of birth, so `isSelf` still has to be part of this. #}
+{% set showPersonalInformation = showPrivateDetails or canSeeYearOfBirth %}
 
 {% block sidebar_label %}{{ member.getFullName }}{% endblock %}
 {% block sidebar %}
@@ -50,7 +51,7 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                {% if showBirthDate %}
+                {% if showPersonalInformation %}
                     <div class="panel">
                         <div class="panel-heading">
                             <h3>{{ 'Personal information'|trans }}</h3>

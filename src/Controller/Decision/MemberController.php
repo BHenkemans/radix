@@ -268,7 +268,7 @@ class MemberController extends AbstractController
                 'committees' => $this->memberInfoService->getOrganMemberships($member),
                 'board' => $this->memberInfoService->getBoardMemberships($member),
                 'profilePhoto' => $profilePhoto?->photo,
-                'canSeeYearOfBirth' => $this->privacyService->yearOfBirthVisibilityFor([$member])[$member->lidnr],
+                'canSeeYearOfBirth' => $this->privacyService->canSeeYearOfBirth($member),
             ],
         );
     }
