@@ -15,7 +15,8 @@ use function array_map;
 
 /**
  * The single source of truth for member-data visibility rules. Currently it decides who may see a member's year of
- * birth (and thus age); it is the hook future surfaces (date of birth / address / email in member search) will reuse.
+ * birth, which is the age on the birthday panel and the birth date on their profile page; it is the hook future
+ * surfaces (address / email in member search) will reuse.
  *
  * Year-of-birth rule: the board and admins always see it. Otherwise it is reciprocal - to see anyone's year
  * of birth you must be sharing your own, and a member who hides theirs is shown ageless to everyone but the board.

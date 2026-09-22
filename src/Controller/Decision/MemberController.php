@@ -15,6 +15,7 @@ use App\Repository\Photo\ProfilePhotoRepository;
 use App\Service\Application\FileDownloadHelper;
 use App\Service\Decision\MemberInfoService;
 use App\Service\Decision\PublicArchiveBrowser;
+use App\Service\User\PrivacyService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -52,6 +53,7 @@ class MemberController extends AbstractController
         private readonly ProfilePhotoRepository $profilePhotoRepository,
         private readonly FileDownloadHelper $fileDownloadHelper,
         private readonly PublicArchiveBrowser $publicArchiveBrowser,
+        private readonly PrivacyService $privacyService,
         #[Autowire('%app.members_area_links%')]
         private readonly array $membersAreaLinks,
     ) {
@@ -266,6 +268,7 @@ class MemberController extends AbstractController
                 'committees' => $this->memberInfoService->getOrganMemberships($member),
                 'board' => $this->memberInfoService->getBoardMemberships($member),
                 'profilePhoto' => $profilePhoto?->photo,
+                'canSeeYearOfBirth' => $this->privacyService->yearOfBirthVisibilityFor([$member])[$member->lidnr],
             ],
         );
     }

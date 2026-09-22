@@ -12,6 +12,9 @@
 {% set isSelf = is_granted(member.getSelfRole) %}
 {% set isBoard = is_granted('ROLE_BOARD') %}
 {% set showPrivateDetails = isSelf or isBoard %}
+{# The birth date is the one detail of the panel below another member may see, when this member shares their year of
+   birth and the reader shares theirs; `canSeeYearOfBirth` already answers yes for the board. #}
+{% set showBirthDate = showPrivateDetails or canSeeYearOfBirth %}
 
 {% block sidebar_label %}{{ member.getFullName }}{% endblock %}
 {% block sidebar %}
@@ -47,26 +50,28 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                {% if showPrivateDetails %}
+                {% if showBirthDate %}
                     <div class="panel">
                         <div class="panel-heading">
                             <h3>{{ 'Personal information'|trans }}</h3>
                         </div>
                         <div class="panel-body">
                             <dl class="profile-details">
-                                {{ _self.detail('Initials'|trans, member.initials) }}
-                                {{ _self.detail('First name'|trans, member.firstName) }}
-                                {{ _self.detail('Last name'|trans, member.lastName) }}
-                                <div class="profile-detail">
-                                    <dt>{{ 'Email'|trans }}</dt>
-                                    <dd>
-                                        {% if member.email %}
-                                            <a href="mailto:{{ member.email }}">{{ member.email }}</a>
-                                        {% else %}
-                                            {{ 'Unknown'|trans }}
-                                        {% endif %}
-                                    </dd>
-                                </div>
+                                {% if showPrivateDetails %}
+                                    {{ _self.detail('Initials'|trans, member.initials) }}
+                                    {{ _self.detail('First name'|trans, member.firstName) }}
+                                    {{ _self.detail('Last name'|trans, member.lastName) }}
+                                    <div class="profile-detail">
+                                        <dt>{{ 'Email'|trans }}</dt>
+                                        <dd>
+                                            {% if member.email %}
+                                                <a href="mailto:{{ member.email }}">{{ member.email }}</a>
+                                            {% else %}
+                                                {{ 'Unknown'|trans }}
+                                            {% endif %}
+                                        </dd>
+                                    </div>
+                                {% endif %}
                                 {{ _self.detail('Birth date'|trans, member.birth|date('l j F Y')) }}
                             </dl>
                             {% if isSelf %}
