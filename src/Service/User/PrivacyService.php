@@ -7,6 +7,7 @@ namespace App\Service\User;
 use App\Entity\Decision\Member;
 use App\Entity\User\Enums\UserRoles;
 use App\Entity\User\User;
+use App\Entity\User\UserSettings;
 use App\Repository\User\UserSettingsRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -15,7 +16,8 @@ use function array_map;
 
 /**
  * The single source of truth for member-data visibility rules. Currently it decides who may see a member's year of
- * birth (and thus age); it is the hook future surfaces (date of birth / address / email in member search) will reuse.
+ * birth, which gates the age on the birthday panel and the birth date on their profile page; it is the hook future
+ * surfaces (address / email in member search) will reuse.
  *
  * Year-of-birth rule: the board and admins always see it. Otherwise it is reciprocal - to see anyone's year
  * of birth you must be sharing your own, and a member who hides theirs is shown ageless to everyone but the board.
@@ -26,6 +28,19 @@ final readonly class PrivacyService
         private Security $security,
         private UserSettingsRepository $settingsRepository,
     ) {
+    }
+
+    public function canSeeYearOfBirth(Member $member): bool
+    {
+        if ($this->security->isGranted(UserRoles::Board->value)) {
+            return true;
+        }
+
+        if (!$this->viewerSharesOwnYearOfBirth()) {
+            return false;
+        }
+
+        return !$this->hidesYearOfBirth($this->settingsRepository->find($member->lidnr));
     }
 
     /**
@@ -50,11 +65,7 @@ final readonly class PrivacyService
             );
         }
 
-        $viewer = $this->security->getUser();
-        if (
-            !$viewer instanceof User
-            || $viewer->hasHiddenYearOfBirth()
-        ) {
+        if (!$this->viewerSharesOwnYearOfBirth()) {
             return array_fill_keys(
                 $lidnrs,
                 false,
@@ -64,11 +75,23 @@ final readonly class PrivacyService
         $settings = $this->settingsRepository->findByLidnrs($lidnrs);
 
         $visibility = [];
-        foreach ($targets as $target) {
-            $lidnr = $target->lidnr;
-            $visibility[$lidnr] = !(($settings[$lidnr] ?? null)->hideYearOfBirth ?? false);
+        foreach ($lidnrs as $lidnr) {
+            $visibility[$lidnr] = !$this->hidesYearOfBirth($settings[$lidnr] ?? null);
         }
 
         return $visibility;
+    }
+
+    private function viewerSharesOwnYearOfBirth(): bool
+    {
+        $viewer = $this->security->getUser();
+
+        return $viewer instanceof User
+            && !$viewer->hasHiddenYearOfBirth();
+    }
+
+    private function hidesYearOfBirth(?UserSettings $settings): bool
+    {
+        return $settings->hideYearOfBirth ?? false;
     }
 }

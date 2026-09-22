@@ -28,7 +28,7 @@ final class PrivacyServiceTest extends TestCase
             targetSettings: $this->settings(hidden: true),
         );
 
-        self::assertTrue($this->canView($service, $this->target(42)));
+        self::assertTrue($service->canSeeYearOfBirth($this->target(42)));
     }
 
     public function testAnonymousViewerNeverSeesTheYearOfBirth(): void
@@ -39,7 +39,7 @@ final class PrivacyServiceTest extends TestCase
             targetSettings: null,
         );
 
-        self::assertFalse($this->canView($service, $this->target(42)));
+        self::assertFalse($service->canSeeYearOfBirth($this->target(42)));
     }
 
     public function testViewerHidingTheirOwnYearOfBirthSeesNoOneElsesAge(): void
@@ -51,7 +51,7 @@ final class PrivacyServiceTest extends TestCase
             targetSettings: null,
         );
 
-        self::assertFalse($this->canView($service, $this->target(42)));
+        self::assertFalse($service->canSeeYearOfBirth($this->target(42)));
     }
 
     public function testSharingViewerCannotSeeATargetWhoHidesTheirYearOfBirth(): void
@@ -62,7 +62,7 @@ final class PrivacyServiceTest extends TestCase
             targetSettings: $this->settings(hidden: true),
         );
 
-        self::assertFalse($this->canView($service, $this->target(42)));
+        self::assertFalse($service->canSeeYearOfBirth($this->target(42)));
     }
 
     public function testSharingViewerSeesATargetWhoSharesTheirYearOfBirth(): void
@@ -74,7 +74,7 @@ final class PrivacyServiceTest extends TestCase
             targetSettings: null,
         );
 
-        self::assertTrue($this->canView($service, $this->target(42)));
+        self::assertTrue($service->canSeeYearOfBirth($this->target(42)));
     }
 
     public function testVisibilityAppliesReciprocityAcrossTheWholeSet(): void
@@ -103,13 +103,6 @@ final class PrivacyServiceTest extends TestCase
         );
     }
 
-    private function canView(
-        PrivacyService $service,
-        Member $target,
-    ): bool {
-        return $service->yearOfBirthVisibilityFor([$target])[$target->lidnr];
-    }
-
     private function service(
         bool $board,
         ?User $viewer,
@@ -120,6 +113,7 @@ final class PrivacyServiceTest extends TestCase
         $security->method('getUser')->willReturn($viewer);
 
         $repository = self::createStub(UserSettingsRepository::class);
+        $repository->method('find')->willReturn($targetSettings);
         $repository->method('findByLidnrs')->willReturnCallback(
             static fn (array $lidnrs): array => null === $targetSettings
                 ? []
