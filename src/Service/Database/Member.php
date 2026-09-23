@@ -20,7 +20,6 @@ use App\Entity\Database\Enums\Studies;
 use App\Entity\Database\MailingListMember as MailingListMemberModel;
 use App\Entity\Database\Member as MemberModel;
 use App\Entity\Database\Membership as MembershipModel;
-use App\Entity\Database\MemberUpdate as MemberUpdateModel;
 use App\Entity\Database\PaymentLink;
 use App\Entity\Database\ProspectiveMember as ProspectiveMemberModel;
 use App\Entity\Database\RenewalLink as RenewalLinkModel;
@@ -34,12 +33,10 @@ use App\Repository\Database\AuditEntryRepository;
 use App\Repository\Database\MailingListMemberRepository;
 use App\Repository\Database\MailingListRepository;
 use App\Repository\Database\MemberRepository;
-use App\Repository\Database\MemberUpdateRepository;
 use App\Repository\Database\ProspectiveMemberRepository;
 use App\Service\Checker\Renewal as RenewalService;
 use App\Validator\Database\BulkMemberIds;
 use DateTimeImmutable;
-use ReflectionClass;
 use RuntimeException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormInterface;
@@ -65,7 +62,6 @@ class Member
         private readonly ActionLinkRepository $actionLinkRepository,
         private readonly AuditEntryRepository $auditEntryRepository,
         private readonly MemberRepository $memberRepository,
-        private readonly MemberUpdateRepository $memberUpdateRepository,
         private readonly ProspectiveMemberRepository $prospectiveMemberRepository,
         private readonly MailingListService $mailingListService,
         private readonly RenewalService $renewalService,
@@ -285,6 +281,7 @@ class Member
      *     member: ?ProspectiveMemberModel,
      *     canBeApproved: ?bool,
      *     canDelete: ?bool,
+     *     canResendPaymentLink: ?bool,
      *     approveMessages: ?array<array-key, string[]>,
      * }
      */
@@ -297,6 +294,7 @@ class Member
                 'member' => null,
                 'canBeApproved' => null,
                 'canDelete' => null,
+                'canResendPaymentLink' => null,
                 'approveMessages' => null,
             ];
         }
@@ -336,6 +334,7 @@ class Member
             'member' => $member,
             'canBeApproved' => $member->canBeApproved(),
             'canDelete' => $member->canBeDeleted(),
+            'canResendPaymentLink' => $member->canResendPaymentLink(),
             'approveMessages' => $approveMessages,
         ];
     }
@@ -972,7 +971,6 @@ class Member
      *       total: int,
      *       paid: int,
      *     },
-     *     updates: int,
      * }
      */
     public function getStatusFigures(): array
@@ -1001,7 +999,6 @@ class Member
                 'total' => $this->prospectiveMemberRepository->count([]),
                 'paid' => $this->getPaidProspectivesCount(),
             ],
-            'updates' => $this->getPendingUpdateCount(),
         ];
     }
 
@@ -1018,71 +1015,12 @@ class Member
     }
 
     /**
-     * The number of pending member updates, a separate function to make sure we don't have to do a lot
-     * of database queries for each page.
-     */
-    public function getPendingUpdateCount(): int
-    {
-        return $this->memberUpdateRepository->count([]);
-    }
-
-    /**
      * Prospective members who have paid. Counted on its own so the sidebar badge does not have to load the whole
      * state of the register.
      */
     public function getPaidProspectivesCount(): int
     {
         return $this->prospectiveMemberRepository->countForFilter(ProspectiveMemberFilter::Paid);
-    }
-
-    /**
-     * Get a list of all pending member updates.
-     *
-     * @return MemberUpdateModel[]
-     */
-    public function getPendingMemberUpdates(): array
-    {
-        return $this->memberUpdateRepository->getPendingUpdates();
-    }
-
-    /**
-     * Get a specific member update.
-     */
-    public function getPendingMemberUpdate(int $lidnr): ?MemberUpdateModel
-    {
-        return $this->memberUpdateRepository->find($lidnr);
-    }
-
-    public function approveMemberUpdate(
-        MemberModel $member,
-        MemberUpdateModel $memberUpdate,
-    ): ?MemberModel {
-        // We use reflection here, because using the hydrator on Member(Edit)Form requires more information. This does
-        // not account for any type changes that may be required (everything is currently a string).
-        $reflectionClass = new ReflectionClass($member);
-        foreach ($memberUpdate->toArray() as $property => $value) {
-            if (!$reflectionClass->hasProperty($property)) {
-                continue;
-            }
-
-            $reflectionProperty = $reflectionClass->getProperty($property);
-            $reflectionProperty->setValue(
-                $member,
-                $value,
-            );
-        }
-
-        $this->memberRepository->persist($member);
-        $this->memberUpdateRepository->remove($memberUpdate);
-
-        return $member;
-    }
-
-    public function rejectMemberUpdate(MemberUpdateModel $memberUpdate): ?bool
-    {
-        $this->memberUpdateRepository->remove($memberUpdate);
-
-        return true;
     }
 
     /**
@@ -1356,24 +1294,6 @@ class Member
             'rows' => $rows,
             'bulk_renewal_shortcuts' => $bulkRenewalShortcuts,
         ];
-    }
-
-    /**
-     * Get the renewal link a renewal form should be built for, if it can still be used.
-     */
-    public function getRenewalLink(string $token): ?RenewalLinkModel
-    {
-        $renewalLink = $this->actionLinkRepository->findRenewalByToken($token);
-
-        if (
-            null === $renewalLink
-            || $renewalLink->used
-            || $renewalLink->linkExpired()
-        ) {
-            return null;
-        }
-
-        return $renewalLink;
     }
 
     /**

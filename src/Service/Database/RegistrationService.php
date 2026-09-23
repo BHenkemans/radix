@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Database;
 
 use App\Entity\Database\MailingList;
+use App\Entity\Database\PaymentLink as PaymentLinkModel;
 use App\Entity\Database\ProspectiveMember as ProspectiveMemberModel;
 use App\Form\Database\Registration\RegistrationData;
 use App\Message\Database\RegistrationUpdate;
@@ -113,16 +114,29 @@ class RegistrationService
     }
 
     /**
+     * Send a prospective member their payment link again, which generates a new token and invalidates the previous
+     * one. False when the fee is already settled, so there is nothing to pay.
+     */
+    public function resendPaymentLink(ProspectiveMemberModel $prospectiveMember): bool
+    {
+        if (!$prospectiveMember->canResendPaymentLink()) {
+            return false;
+        }
+
+        $this->memberService->sendRegistrationUpdateEmail(
+            $prospectiveMember,
+            RegistrationUpdate::PaymentLinkResent,
+        );
+
+        return true;
+    }
+
+    /**
      * Send a prospective member back to the checkout with their payment link, returning the URL to continue at.
      */
-    public function restartCheckout(string $token): string|CheckoutRestartFailure
+    public function restartCheckout(PaymentLinkModel $paymentLink): string|CheckoutRestartFailure
     {
-        $paymentLink = $this->stripeService->getPaymentLink($token);
-
-        if (
-            null === $paymentLink
-            || $paymentLink->used
-        ) {
+        if ($paymentLink->used) {
             return CheckoutRestartFailure::LinkUnusable;
         }
 

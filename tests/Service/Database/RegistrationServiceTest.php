@@ -213,46 +213,78 @@ class RegistrationServiceTest extends TestCase
     public function testSendsSomeoneBackToTheCheckoutWithTheirPaymentLink(): void
     {
         $this->stripeService = self::createStub(StripeService::class);
-        $this->stripeService->method('getPaymentLink')->willReturn($this->paymentLink());
         $this->stripeService->method('restartCheckoutLink')->willReturn('https://checkout.stripe.test/again');
 
         self::assertSame(
             'https://checkout.stripe.test/again',
-            $this->service()->restartCheckout('a-token'),
+            $this->service()->restartCheckout($this->paymentLink()),
         );
     }
 
-    public function testRefusesAPaymentLinkThatIsUnknownOrAlreadyUsed(): void
+    /**
+     * Only a hash of the token is stored, so the secretary cannot send the link as it was. Sending it again is what
+     * generates a new one.
+     */
+    public function testSendsAnApplicantTheirPaymentLinkAgain(): void
+    {
+        $prospectiveMember = $this->applicantWithAPaymentLink();
+
+        $memberService = $this->createMock(MemberService::class);
+        $memberService->expects(self::once())
+            ->method('sendRegistrationUpdateEmail')
+            ->with(
+                $prospectiveMember,
+                RegistrationUpdate::PaymentLinkResent,
+            );
+        $this->memberService = $memberService;
+
+        self::assertTrue($this->service()->resendPaymentLink($prospectiveMember));
+    }
+
+    public function testDoesNotSendAPaymentLinkWhenThereIsNothingLeftToPay(): void
+    {
+        $prospectiveMember = $this->applicantWithAPaymentLink();
+        $paymentLink = $prospectiveMember->getPaymentLink();
+        self::assertNotNull($paymentLink);
+        $paymentLink->used = true;
+
+        $memberService = $this->createMock(MemberService::class);
+        $memberService->expects(self::never())->method('sendRegistrationUpdateEmail');
+        $this->memberService = $memberService;
+
+        self::assertFalse($this->service()->resendPaymentLink($prospectiveMember));
+    }
+
+    public function testDoesNotSendAPaymentLinkToAnApplicantWhoHasNone(): void
+    {
+        $memberService = $this->createMock(MemberService::class);
+        $memberService->expects(self::never())->method('sendRegistrationUpdateEmail');
+        $this->memberService = $memberService;
+
+        self::assertFalse($this->service()->resendPaymentLink(new ProspectiveMember()));
+    }
+
+    public function testRefusesAPaymentLinkThatWasAlreadyUsed(): void
     {
         $used = $this->paymentLink();
         $used->used = true;
 
         $this->stripeService = self::createStub(StripeService::class);
-        $this->stripeService->method('getPaymentLink')->willReturn(null);
 
         self::assertSame(
             CheckoutRestartFailure::LinkUnusable,
-            $this->service()->restartCheckout('unknown'),
-        );
-
-        $this->stripeService = self::createStub(StripeService::class);
-        $this->stripeService->method('getPaymentLink')->willReturn($used);
-
-        self::assertSame(
-            CheckoutRestartFailure::LinkUnusable,
-            $this->service()->restartCheckout('used'),
+            $this->service()->restartCheckout($used),
         );
     }
 
     public function testReportsACheckoutThatCannotBeReopened(): void
     {
         $this->stripeService = self::createStub(StripeService::class);
-        $this->stripeService->method('getPaymentLink')->willReturn($this->paymentLink());
         $this->stripeService->method('restartCheckoutLink')->willReturn(null);
 
         self::assertSame(
             CheckoutRestartFailure::CheckoutUnavailable,
-            $this->service()->restartCheckout('a-token'),
+            $this->service()->restartCheckout($this->paymentLink()),
         );
     }
 
@@ -413,6 +445,16 @@ class RegistrationServiceTest extends TestCase
         $paymentLink->prospectiveMember = new ProspectiveMember();
 
         return $paymentLink;
+    }
+
+    private function applicantWithAPaymentLink(): ProspectiveMember
+    {
+        $prospectiveMember = new ProspectiveMember();
+        $paymentLink = new PaymentLink();
+        $paymentLink->prospectiveMember = $prospectiveMember;
+        $prospectiveMember->setPaymentLink($paymentLink);
+
+        return $prospectiveMember;
     }
 
     private function paidProspectiveMember(): ProspectiveMember
