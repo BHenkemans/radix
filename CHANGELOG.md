@@ -8,6 +8,32 @@ were made by separate applications on separate schedules and reading them as one
 
 The releases of the merged application. Tags and links point at this repository.
 
+### [v5.6.0](https://github.com/GEWIS/radix/tree/v5.6.0) (2026-09-23)
+
+* Added read access to the member pages of the register for every board member.
+* Added a re-run of a form submission that a lapsed sudo grant refused.
+* Added a share card to an activity, drawn when a revision is approved.
+* Added meta tags to every public page.
+* Added a link from an album to the activity its photos were taken at.
+* Added a suggestion of the next meeting number to the form that records a meeting.
+* Added management of the labels of an activity, on the same base as the labels of a vacancy.
+* Added a colour vision palette for the marks of a revision review to the general settings.
+* Added a warning before a page is left while a form on it has unsaved changes.
+* Improved the sudo grant, which now extends on continued use instead of expiring a fixed half hour after the password was entered.
+* Improved the display of the date options of the activity calendar and rejected a range of days on an option that is not for multiple days.
+* Changed the navigation to Turbo Drive, so that every page is fetched and swapped in rather than loaded.
+* Changed the closing day of a vacancy to the day from which it is no longer shown.
+* Changed the renewal and payment links that the register mails to the split token the password reset already uses.
+* Changed the opcache parameters to the values Symfony now recommends.
+* Fixed an issue where the sub-albums of an album were listed newest first instead of oldest first.
+* Fixed an issue where the public archive showed the metadata files that Explorer and Finder create on the share it mirrors.
+* Fixed an issue where Turbo's prefetch of a link on hover was recorded as the address to return to after a sign-in.
+* Fixed an issue where the language a visitor had chosen was forgotten on the next visit to `/` or `/join`.
+* Fixed an issue where a member's birth date was hidden from the members who may see it.
+* Fixed an issue where the filter on the organising body of an activity showed every body that ever organised a published activity.
+* Fixed an issue where the inline edits of the meeting administration and of the reference library were rejected by the client.
+* Fixed an issue where the reminder that a sign-up list is closing showed only the name of the list.
+
 ### [v5.5.1](https://github.com/GEWIS/radix/tree/v5.5.1) (2026-09-11)
 
 * Changed the migrations of both databases into a single base each. Both production databases have to be rolled up before this release migrates them.
